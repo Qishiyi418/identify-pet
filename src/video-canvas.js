@@ -4,7 +4,7 @@
 // only needs a display wake lock for visible/big video or audible playback.
 // A canvas presents the same alpha frames without becoming a media player.
 window.PetVideoCanvas = {
-  attach(video, stage) {
+  attach(video, stage, onPaint = () => {}) {
     const canvas = document.createElement('canvas');
     canvas.width = 640;
     canvas.height = 360;
@@ -21,6 +21,8 @@ window.PetVideoCanvas = {
     let posterUrl = null;
     let poster = null;
     let restarting = false;
+    let hasFrame = false;
+    const painted = () => { hasFrame = true; onPaint(); };
     const fit = (width, height) => {
       if (canvas.width !== width || canvas.height !== height) {
         canvas.width = width;
@@ -32,6 +34,7 @@ window.PetVideoCanvas = {
         fit(poster.naturalWidth, poster.naturalHeight);
         context.clearRect(0, 0, canvas.width, canvas.height);
         context.drawImage(poster, 0, 0, canvas.width, canvas.height);
+        painted();
       }
     };
     const sync = () => {
@@ -59,8 +62,9 @@ window.PetVideoCanvas = {
         return;
       }
       restarting = false;
+      if (video.seeking) return;
       if (video.readyState < 2 || !video.videoWidth || !video.videoHeight) {
-        drawPoster();
+        if (!hasFrame) drawPoster();
         return;
       }
       if (!force && lastTime === video.currentTime) return;
@@ -68,6 +72,7 @@ window.PetVideoCanvas = {
       context.clearRect(0, 0, canvas.width, canvas.height);
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
       lastTime = video.currentTime;
+      painted();
     };
     const stop = () => {
       if (frame !== null) cancelAnimationFrame(frame);
@@ -86,6 +91,7 @@ window.PetVideoCanvas = {
     const emptied = () => {
       stop();
       lastTime = null;
+      hasFrame = false;
       context.clearRect(0, 0, canvas.width, canvas.height);
       drawPoster();
     };
@@ -111,9 +117,11 @@ window.PetVideoCanvas = {
     start();
     return {
       canvas,
+      get hasFrame() { return hasFrame; },
       restartFromFirstFrame() {
         if (disposed) return;
         restarting = true;
+        hasFrame = false;
         lastTime = null;
         drawPoster(true);
         video.currentTime = 0;

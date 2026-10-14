@@ -10,6 +10,7 @@
   const { HoverInteractions, GreetingMessages } = window.PetHover;
   const { HoldIntent } = window.PetHold;
   const { MediaCache } = window.PetMediaCache;
+  const presenter = new window.PetFramePresenter.FramePresenter(stage);
   const greetingMessages = new GreetingMessages();
   const hoverCounters = { greet: 0, fall: 0 };
   let greeting = null;
@@ -75,7 +76,7 @@
   function loadSurface(entry, signal) {
     const { video } = entry;
     video.poster = entry.poster;
-    entry.player = window.PetVideoCanvas.attach(video, stage);
+    entry.player = window.PetVideoCanvas.attach(video, stage, () => presenter.painted(entry));
     entry.player.canvas.id = `${entry.id}-canvas`;
     entry.context = entry.player.canvas.getContext('2d');
     video.preload = 'auto';
@@ -199,13 +200,14 @@
         entry.video.style.transformOrigin = `${state.idle.foot[0] * scale}px 0`;
       }
     }
+    presenter.render();
   }
   function select(id) {
     activeId = id;
     // Keep clicks valid on the very frame where a preloaded surface takes over.
     try { pixels = readPixels(surfaces[id]); } catch { pixels = null; }
     lastTime = surfaces[id].video.currentTime;
-    lastHit = null; layout();
+    lastHit = null; layout(); presenter.select(surfaces[id]);
     // An older fade-out must not pause a new decoder while play()/seek is pending.
     const revision = switching;
     later(() => { if (activeId === id && switching === revision) {
@@ -545,6 +547,21 @@
   listeners.push(window.pet.onHeadTouch(() => requestTouch(null, true)));
   listeners.push(window.pet.onBodyTouch(() => requestBody(true)));
   listeners.push(window.pet.onAmbient(requestAmbient));
+  if (state.verification) window.petActivityTest = {
+    setAutomatic: value => { automaticActivities = Boolean(value); reportActivity(); },
+    setGroupDurationMs: value => {
+      if (activitySequencer.current || !Number.isFinite(value) || value <= 0) throw new Error('Expected idle and positive group duration');
+      activitySequencer.groupMs = value;
+    },
+  };
+  if (state.verification) window.petDragTest = {
+    begin: () => {
+      if (held || state.paused || hidden || blocked) return false;
+      down = { x: 0, y: 0, runRegion: null }; beginDragVisual(); return true;
+    },
+    release: () => release({ type: 'pointerup', screenX: 0, screenY: 0 }),
+    cancel: () => { release({ type: 'pointercancel' }); dragFeedback.cancel(); },
+  };
   window.petDiagnostics = () => {
     const entry = current(), video = entry.video;
     return { currentTime: video.currentTime, duration: video.duration, paused: video.paused, muted: video.muted,
@@ -559,6 +576,7 @@
       activityAvailable: Object.values(surfaces).filter(entry => entry.activityId).every(entry => !entry.failure),
       activityReady: Object.values(surfaces).filter(entry => entry.activityId).every(entry => entry.video.readyState >= 2),
       mediaCache: mediaCache.snapshot(),
+      presentation: presenter.snapshot(),
       conditionalRandomEnabled: state.conditionalRandomEnabled,
       activityFailures: Object.values(surfaces).filter(entry => entry.activityId).map(entry => entry.failure),
       dragFeedback: dragFeedback.snapshot(),
@@ -590,7 +608,7 @@
     activitySequencer?.dispose();
     dragFeedback.cancel();
     disposed = true; clearTimeout(maskTimer);
-    clearTimeout(holdTimer); holdIntent.cancel(); mediaCache.dispose();
+    clearTimeout(holdTimer); holdIntent.cancel(); mediaCache.dispose(); presenter.dispose();
     for (const timer of timers) clearTimeout(timer);
     for (const unsubscribe of listeners) if (typeof unsubscribe === 'function') unsubscribe();
     pixels = null;
@@ -598,5 +616,5 @@
   actions.setBlocked('paused', state.paused);
   hidden = !state.visible; actions.setBlocked('hidden', hidden);
   for (const entry of Object.values(surfaces)) if (entry.hot) mediaCache.ensure(entry.id);
-  layout(); play(surfaces.idle); sample(); reportActivity();
+  layout(); presenter.select(surfaces.idle); play(surfaces.idle); sample(); reportActivity();
 })();
