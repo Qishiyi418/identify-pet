@@ -1,0 +1,5 @@
+html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: transparent; user-select: none; }
+#stage { position: relative; width: 100%; height: 100%; overflow: hidden; cursor: url('../assets/icons/paw-cursor.svg') 16 15, grab; touch-action: none; }
+#stage.dragging { cursor: url('../assets/icons/paw-cursor.svg') 16 15, grabbing; }
+.pet-surface { position: absolute; display: block; pointer-events: none; transition: opacity 100ms ease; }
+.pet-video-source { position: fixed !important; left: -10000px !important; top: -10000px !important; width: 1px !important; height: 1px !important; opacity: 0 !important; pointer-events: none !important; }

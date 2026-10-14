@@ -1,0 +1,6 @@
+html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: transparent; }
+body { box-sizing: border-box; padding: 7px 8px 13px; font-family: "Microsoft YaHei UI", "Microsoft YaHei", sans-serif; }
+#speech { position: relative; box-sizing: border-box; min-height: 63px; padding: 13px 16px; background: #fffaf2; border: 1px solid #d6b7a1; border-radius: 17px; color: #513c34; font-size: 14px; line-height: 1.65; box-shadow: 0 2px 6px #39251c18; }
+#speech::after { content: ""; position: absolute; left: calc(50% - 6px); bottom: -6px; width: 10px; height: 10px; background: #fffaf2; border-right: 1px solid #d6b7a1; border-bottom: 1px solid #d6b7a1; transform: rotate(45deg); }
+body.below { padding-top: 13px; padding-bottom: 7px; }
+body.below #speech::after { top: -6px; bottom: auto; transform: rotate(225deg); }

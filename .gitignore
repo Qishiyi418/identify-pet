@@ -1,0 +1,27 @@
+# Dependencies and build output
+node_modules/
+dist/
+build/
+releases/
+
+# Local data and credentials
+local-data/
+logs/
+*.log
+.env
+.env.*
+!.env.example
+
+# Temporary files and editor metadata
+.cache/
+.npm-cache/
+coverage/
+work/
+*.zip
+*.7z
+*.tmp
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini

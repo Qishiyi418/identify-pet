@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "alphaThreshold": 24,
+  "coordinates": "Source pixel boundaries [left, top, right, bottom), clipped to the shared viewport",
+  "clips": {
+    "idle": {
+      "file": "assets/animations/idle-breathe.webm",
+      "sha256": "59f8c95045f13cefcfde413e89a92a92648139308edee98db3c1ba1ffb32f3f2",
+      "frames": 121,
+      "bounds": [
+        221,
+        64,
+        421,
+        320
+      ]
+    },
+    "run": {
+      "file": "assets/animations/run-idle-match-v002/run-v002-m04.webm",
+      "sha256": "f7239d01a9d211d34f0a7800838b0daac1799c848183f11b1a1565748fca357c",
+      "frames": 184,
+      "bounds": [
+        224,
+        62,
+        424,
+        321
+      ],
+      "mirroredBounds": [
+        216,
+        62,
+        416,
+        321
+      ]
+    }
+  },
+  "visibleBounds": [
+    216,
+    62,
+    424,
+    321
+  ]
+}
