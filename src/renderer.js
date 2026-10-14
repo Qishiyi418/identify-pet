@@ -547,21 +547,6 @@
   listeners.push(window.pet.onHeadTouch(() => requestTouch(null, true)));
   listeners.push(window.pet.onBodyTouch(() => requestBody(true)));
   listeners.push(window.pet.onAmbient(requestAmbient));
-  if (state.verification) window.petActivityTest = {
-    setAutomatic: value => { automaticActivities = Boolean(value); reportActivity(); },
-    setGroupDurationMs: value => {
-      if (activitySequencer.current || !Number.isFinite(value) || value <= 0) throw new Error('Expected idle and positive group duration');
-      activitySequencer.groupMs = value;
-    },
-  };
-  if (state.verification) window.petDragTest = {
-    begin: () => {
-      if (held || state.paused || hidden || blocked) return false;
-      down = { x: 0, y: 0, runRegion: null }; beginDragVisual(); return true;
-    },
-    release: () => release({ type: 'pointerup', screenX: 0, screenY: 0 }),
-    cancel: () => { release({ type: 'pointercancel' }); dragFeedback.cancel(); },
-  };
   window.petDiagnostics = () => {
     const entry = current(), video = entry.video;
     return { currentTime: video.currentTime, duration: video.duration, paused: video.paused, muted: video.muted,

@@ -6,8 +6,7 @@
   "description": "Windows 拉拉队员桌宠，支持透明动画、鼠标互动、随机动作与桌面移动。",
   "main": "src/main.cjs",
   "scripts": {
-    "start": "node scripts/launch.cjs",
-    "test:transitions": "node --test tests/frame-presenter.test.cjs"
+    "start": "node scripts/launch.cjs"
   },
   "devDependencies": {
     "electron": "43.3.0"
