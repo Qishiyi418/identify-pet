@@ -441,7 +441,7 @@
     const clicked = down && !held && intent !== 'release' && event?.type === 'pointerup';
     const wasHeld = held;
     const runRegion = down?.runRegion;
-    down = null; held = false; stage.classList.remove('dragging');
+    down = null; held = false; stage.classList.remove('pressed', 'dragging');
     window.pet.endDrag(event?.type === 'pointerup' ? { x: event.screenX, y: event.screenY } : null);
     if (event?.pointerId !== undefined && stage.hasPointerCapture(event.pointerId)) stage.releasePointerCapture(event.pointerId);
     if (wasHeld) dragFeedback.release(event?.type === 'pointerup');
@@ -474,6 +474,7 @@
     hover.suspend(); window.pet.speech(null);
     event.preventDefault(); down = { x: event.screenX, y: event.screenY,
       runRegion: runActive || flightActive ? (aboveNeck(sourcePoint({ x: event.clientX, y: event.clientY }), true, flightActive ? state.flight.necklineY : state.run.necklineY) ? 'head' : 'body') : null };
+    stage.classList.add('pressed');
     holdIntent.begin(down); armHold(); stage.setPointerCapture(event.pointerId); reportActivity();
   });
   on(stage, 'pointermove', event => {
