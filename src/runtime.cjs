@@ -27,10 +27,15 @@ function sanitizeSettings(input, config) {
     randomEnabled: typeof value.randomEnabled === 'boolean' ? value.randomEnabled : true,
     conditionalRandomEnabled: typeof value.conditionalRandomEnabled === 'boolean' ? value.conditionalRandomEnabled : true,
     randomActions: sanitizeRandomActions(value.randomActions, config.randomPolicy),
-    position: finite(value.position?.x) && finite(value.position?.y)
-      ? { x: Math.round(value.position.x), y: Math.round(value.position.y) } : null,
+    hoverGreetingEnabled: typeof value.hoverGreetingEnabled === 'boolean' ? value.hoverGreetingEnabled : true,
+    activityIdleSec: activityIdleChoices.includes(value.activityIdleSec) ? value.activityIdleSec : defaultActivityIdleSec,
+    roamNearHome: typeof value.roamNearHome === 'boolean' ? value.roamNearHome : true,
+    position: point(value.position),
+    home: point(value.home),
   };
 }
+const activityIdleChoices = [15, 60, 180], defaultActivityIdleSec = 60;
+const point = value => finite(value?.x) && finite(value?.y) ? { x: Math.round(value.x), y: Math.round(value.y) } : null;
 
 function geometry(height, idle) {
   const scale = height / idle.visibleHeight;
@@ -91,6 +96,32 @@ function recoverPosition(bounds, areas, body) {
   return constrainContent(bounds, areas, body);
 }
 
+// Limit automatic running and flying to a box around the position the user chose,
+// so the character does not slowly drift over the middle of the desktop.
+function roamArea(home, body, areas, scale, reach = { x: 360, y: 160 }) {
+  const display = nearestArea(contentBounds({ ...home, width: 0, height: 0 }, body), areas);
+  const box = { x: home.x + body.x - reach.x * scale, y: home.y + body.y - reach.y * scale,
+    right: home.x + body.x + body.width + reach.x * scale, bottom: home.y + body.y + body.height + reach.y * scale };
+  const x = Math.max(box.x, display.x), y = Math.max(box.y, display.y);
+  const right = Math.min(box.right, display.x + display.width), bottom = Math.min(box.bottom, display.y + display.height);
+  if (right - x < body.width || bottom - y < body.height) return display;
+  return { x: Math.round(x), y: Math.round(y), width: Math.round(right - x), height: Math.round(bottom - y) };
+}
+
+// Use the stored home while the character is still inside its roaming box.
+// Anything else that placed it outside (not a drag) becomes the new home.
+function roamingArea(home, bounds, body, areas, scale) {
+  const content = contentBounds(bounds, body);
+  const contains = area => content.x >= area.x - 1 && content.y >= area.y - 1 &&
+    content.x + content.width <= area.x + area.width + 1 && content.y + content.height <= area.y + area.height + 1;
+  if (home) {
+    const area = roamArea(home, body, areas, scale);
+    if (contains(area)) return { area, home };
+  }
+  const next = { x: bounds.x, y: bounds.y };
+  return { area: roamArea(next, body, areas, scale), home: next };
+}
+
 function resizeAtFeet(bounds, before, after) {
   return {
     x: Math.round(bounds.x + before.anchorX - after.anchorX),
@@ -99,5 +130,5 @@ function resizeAtFeet(bounds, before, after) {
   };
 }
 
-module.exports = { sanitizeSettings, sanitizeRandomActions, geometry, constrain, resizeAtFeet, nearestArea,
+module.exports = { sanitizeSettings, sanitizeRandomActions, activityIdleChoices, roamArea, roamingArea, geometry, constrain, resizeAtFeet, nearestArea,
   movementBody, contentBounds, contentLimits, constrainContent, recoverPosition };

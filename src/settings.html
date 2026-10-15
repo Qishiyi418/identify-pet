@@ -28,13 +28,17 @@
       </section>
       <section class="behavior-section" aria-labelledby="behavior-title">
         <h2 id="behavior-title">日常行为</h2>
-        <label class="toggle-row"><span><strong>随机播放动作</strong><small>连续待机 15 秒后选择动作，分组持续 30 秒</small></span><input id="randomEnabled" class="switch" type="checkbox" disabled></label>
+        <label class="toggle-row"><span><strong>随机播放动作</strong><small>待机一段时间后自己找点事做，分组持续 30 秒</small></span><input id="randomEnabled" class="switch" type="checkbox" disabled></label>
+        <div class="toggle-row"><span><strong><label for="activityIdleSec">动作频率</label></strong><small>连续待机多久后开始下一个随机动作</small></span><select id="activityIdleSec" class="compact-select" disabled></select></div>
         <label class="toggle-row"><span><strong>按条件和权重选择动作</strong><small>关闭后恢复原来的等概率随机方式</small></span><input id="conditionalRandomEnabled" class="switch" type="checkbox" disabled></label>
         <label class="toggle-row"><span><strong>随机移动</strong><small>允许自动走动和撑伞升降</small></span><input id="wanderEnabled" class="switch" type="checkbox" disabled></label>
+        <label class="toggle-row"><span><strong>只在原位附近活动</strong><small>走动和撑伞不离开你放置的位置太远</small></span><input id="roamNearHome" class="switch" type="checkbox" disabled></label>
+        <label class="toggle-row"><span><strong>悬停打招呼</strong><small>鼠标在人物上停留片刻时挥手并显示问候</small></span><input id="hoverGreetingEnabled" class="switch" type="checkbox" disabled></label>
         <label class="toggle-row"><span><strong>保持置顶</strong><small>让人物显示在其他窗口上方</small></span><input id="alwaysOnTop" class="switch" type="checkbox" disabled></label>
         <label class="toggle-row"><span><strong>全屏时自动避让</strong><small>同一屏幕进入全屏时隐藏并暂停</small></span><input id="avoidFullscreen" class="switch" type="checkbox" disabled></label>
+        <label class="toggle-row"><span><strong>开机自动启动</strong><small>登录 Windows 后自动出现在桌面上</small></span><input id="launchAtLogin" class="switch" type="checkbox" disabled></label>
       </section>
-      <aside class="interaction-note"><strong>和她互动</strong><p>点击摸头或回应，长按提起、松手放下。<br>右键选择动作，待机时悬停会打招呼。</p></aside>
+      <aside class="interaction-note"><strong>和她互动</strong><p>点击摸头或回应，长按提起、松手放下。<br>右键人物或单击托盘图标打开菜单，双击托盘图标显示/隐藏。</p></aside>
     </section>
     <section id="random" role="tabpanel" aria-labelledby="tab-random" hidden>
       <div class="random-intro"><h2>让动作更合时宜</h2><p>“优先”会提高合适时段的出现概率，“仅”会限制出现时段。再结合冷却与权重抽选；权重 0 即关闭。手动点播不受限制。</p></div>
@@ -44,7 +48,7 @@
       <button id="reset-random" class="text-button reset-random">恢复默认随机规则</button>
     </section>
   </main>
-  <footer><span>修改会自动保存</span><span>关闭此窗口，桌宠继续陪伴</span></footer>
+  <footer><span>修改会自动保存</span><span>按 Esc 关闭此窗口，桌宠继续陪伴</span></footer>
   <script src="settings.js"></script>
 </body>
 </html>

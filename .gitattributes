@@ -1,4 +1,4 @@
 * text=auto eol=lf
 *.png binary
 *.webm binary
-*.vbs text eol=crlf
+*.vbs text eol=crlf working-tree-encoding=UTF-16LE-BOM

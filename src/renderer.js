@@ -141,7 +141,7 @@
   if (activityItems.length) activitySequencer = new ActivitySequencer({
     activities: [...activityItems, { id: 'run', type: 'single', segment: { kind: 'run', durationSec: state.run.durationSec } },
       ...(state.flight ? [{ id: 'flight', type: 'single', segment: { kind: 'flight', durationSec: state.flight.durationSec } }] : [])],
-    idleMs: state.activities.idleMs, groupMs: state.activities.groupDurationMs,
+    idleMs: state.activityIdleMs ?? state.activities.idleMs, groupMs: state.activities.groupDurationMs,
     rules: item => {
       if (!state.conditionalRandomEnabled) return {};
       const rule = state.randomActions?.rules[item.id];
@@ -173,6 +173,7 @@
   const hover = new HoverInteractions({ ...state.hover,
     trigger: id => {
       if (!state.hover?.enabled || !surfaces[id] || surfaces[id].failure || down || held || state.paused || hidden || blocked) return false;
+      if (id === 'greet' && state.hover.greetEnabled === false) return false;
       if (id === 'greet' && (activeId !== 'idle' || hasAction() || activitySequencer?.current || dragFeedback.active)) return false;
       if (id === 'fall' && (!runActive || actions.current?.id !== 'run')) return false;
       activitySequencer?.setIdle(false, id);
@@ -460,7 +461,8 @@
     dragFeedback.begin(); reportActivity();
   }
   const holdIntent = new HoldIntent({ onIntent: (intent, cursor) => {
-    if (!down || held || disposed || state.paused || hidden || blocked) return;
+    // A paused pet can still be moved; only its animation stays frozen.
+    if (!down || held || disposed || hidden || blocked) return;
     clearTimeout(holdTimer); holdTimer = null; holdCounters[intent]++;
     beginDragVisual(); window.pet.startDrag(down, cursor);
   } });
@@ -470,7 +472,7 @@
       Math.max(1, holdIntent.holdMs - (performance.now() - holdIntent.press.at)));
   }
   on(stage, 'pointerdown', event => {
-    if (event.button !== 0 || down || disposed || hidden || state.paused || blocked || !isHit({ x: event.clientX, y: event.clientY })) return;
+    if (event.button !== 0 || down || disposed || hidden || blocked || !isHit({ x: event.clientX, y: event.clientY })) return;
     hover.suspend(); window.pet.speech(null);
     event.preventDefault(); down = { x: event.screenX, y: event.screenY,
       runRegion: runActive || flightActive ? (aboveNeck(sourcePoint({ x: event.clientX, y: event.clientY }), true, flightActive ? state.flight.necklineY : state.run.necklineY) ? 'head' : 'body') : null };
@@ -513,10 +515,14 @@
   });
   listeners.push(window.pet.onState(next => {
     const policyChanged = next.conditionalRandomEnabled !== state.conditionalRandomEnabled || JSON.stringify(next.randomActions) !== JSON.stringify(state.randomActions);
+    const idleChanged = next.activityIdleMs !== state.activityIdleMs, pausing = next.paused && !state.paused;
     state = next;
     automaticActivities = state.activitySchedulingEnabled;
-    if (policyChanged) activitySequencer?.refreshPolicy();
-    if (state.paused) { hover.suspend(); window.pet.speech(null); release(); dragFeedback.cancel(); }
+    if (activitySequencer && idleChanged && Number.isFinite(state.activityIdleMs)) activitySequencer.idleMs = state.activityIdleMs;
+    if (policyChanged || idleChanged) activitySequencer?.refreshPolicy();
+    // Only the transition into pause cancels input, so state updates that arrive
+    // while a paused pet is being dragged do not drop it.
+    if (pausing) { hover.suspend(); window.pet.speech(null); release(); dragFeedback.cancel(); }
     actions.setBlocked('paused', state.paused); layout(); playback(); reportActivity();
   }));
   listeners.push(window.pet.onPointer(point => reportHit(point, true)));
