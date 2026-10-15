@@ -635,8 +635,8 @@
     }
   },
   "hover": {
-    "dwellMs": 250,
-    "cooldownMs": 20000,
+    "dwellMs": 700,
+    "cooldownMs": 60000,
     "leaveMs": 180,
     "speechDurationMs": 7200,
     "greet": {

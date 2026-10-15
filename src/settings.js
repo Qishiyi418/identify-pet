@@ -4,6 +4,8 @@
   const status = $('save-status');
   let model, pending = {}, frame = null, flushing = false;
   const rows = new Map();
+  const toggles = ['randomEnabled', 'conditionalRandomEnabled', 'wanderEnabled', 'roamNearHome', 'hoverGreetingEnabled', 'alwaysOnTop', 'avoidFullscreen', 'launchAtLogin'];
+  const idleLabels = { 15: '活泼（15 秒）', 60: '适中（1 分钟）', 180: '安静（3 分钟）' };
   function saving(text, error = false) { status.textContent = text; status.dataset.error = String(error); }
   function queue(patch) {
     pending = { ...pending, ...patch, randomActions: patch.randomActions
@@ -70,7 +72,12 @@
     if (document.activeElement !== $('height')) $('height').value = data.settings.height;
     $('height-value').textContent = $('height').value + ' px';
     $('height-min').textContent = data.minHeight; $('height-max').textContent = data.maxHeight;
-    for (const id of ['randomEnabled', 'conditionalRandomEnabled', 'wanderEnabled', 'alwaysOnTop', 'avoidFullscreen']) { $(id).checked = data.settings[id]; $(id).disabled = false; }
+    for (const id of toggles) { $(id).checked = data.settings[id]; $(id).disabled = false; }
+    $('roamNearHome').disabled = !data.settings.wanderEnabled;
+    const idle = $('activityIdleSec');
+    if (!idle.options.length) for (const seconds of data.activityIdleChoices) idle.appendChild(option(seconds, idleLabels[seconds] ?? seconds + ' 秒'));
+    if (document.activeElement !== idle) idle.value = String(data.settings.activityIdleSec);
+    idle.disabled = !data.settings.randomEnabled;
     $('random-disabled').hidden = data.settings.randomEnabled;
     $('conditions-disabled').hidden = !data.settings.randomEnabled || data.settings.conditionalRandomEnabled;
     for (const [id, { row, controls }] of rows) updateRow(row, controls, data.settings.randomActions[id], data.settings.randomEnabled && data.settings.conditionalRandomEnabled);
@@ -93,8 +100,14 @@
   }
   $('height').addEventListener('input', () => { $('height-value').textContent = $('height').value + ' px'; queue({ height: Number($('height').value) }); });
   $('reset-size').addEventListener('click', () => { $('height').value = model.defaultHeight; queue({ height: model.defaultHeight }); });
-  for (const id of ['randomEnabled', 'conditionalRandomEnabled', 'wanderEnabled', 'alwaysOnTop', 'avoidFullscreen']) $(id).addEventListener('change', () => queue({ [id]: $(id).checked }));
-  $('reset-random').addEventListener('click', () => queue({ randomActions: model.defaults }));
+  for (const id of toggles) $(id).addEventListener('change', () => queue({ [id]: $(id).checked }));
+  $('activityIdleSec').addEventListener('change', () => queue({ activityIdleSec: Number($('activityIdleSec').value) }));
+  $('reset-random').addEventListener('click', () => {
+    if (confirm('恢复所有动作的默认随机规则？当前的权重、时段和冷却设置会被替换。')) queue({ randomActions: model.defaults });
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && !event.defaultPrevented && !(event.target instanceof HTMLSelectElement)) window.close();
+  });
   try {
     const initial = await window.petSettings.initialize();
     if (!initial) throw new Error('Settings unavailable');

@@ -63,6 +63,12 @@ class StartupPresentation {
     this.events.push({ type: 'reveal', opacity: this.window.getOpacity(), visible: this.window.isVisible() });
     this.finished = true; this.phase = 'ready'; return true;
   }
+  // After a failed warmup, let the caller show the window normally instead of
+  // retrying forever while the pet stays invisible.
+  fallback() {
+    if (this.finished || this.pending || !this.available()) return false;
+    this.finished = true; this.phase = 'fallback'; this.events.push({ type: 'fallback' }); return true;
+  }
   cancel() { this.cancelled = true; }
   snapshot() { return { phase: this.phase, finished: this.finished, frames: this.frames, events: this.events }; }
 }

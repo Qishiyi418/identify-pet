@@ -1,11 +1,11 @@
 'use strict';
-const { app, BrowserWindow, ipcMain, Menu, Tray, nativeImage, screen, dialog, powerMonitor } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu, Tray, nativeImage, nativeTheme, screen, dialog, powerMonitor } = require('electron');
 const fs = require('node:fs');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const config = require('../config/runtime.json');
 const movement = require('../config/movement.json');
-const { sanitizeSettings, geometry, constrain, resizeAtFeet, movementBody, recoverPosition } = require('./runtime.cjs');
+const { sanitizeSettings, activityIdleChoices, roamingArea, geometry, constrain, resizeAtFeet, movementBody, recoverPosition } = require('./runtime.cjs');
 const { DragMotion } = require('./drag-motion.cjs');
 const { WanderMotion } = require('./wander-motion.cjs');
 const { FlightMotion } = require('./flight-motion.cjs');
@@ -25,7 +25,7 @@ if (process.platform === 'win32') app.disableHardwareAcceleration();
 app.setPath('userData', path.join(app.getPath('appData'), config.dataDirectory));
 app.setPath('sessionData', path.join(app.getPath('userData'), 'chromium'));
 
-let win, tray, trayMenu, pointerTimer, diagnosticsTimer, saveTimer;
+let win, tray, trayMenu, trayClickTimer, pointerTimer, diagnosticsTimer, saveTimer;
 let speechWin, speechReady, speechTimer, speechText = '', speechBelow = false, speechRevision = 0;
 let settingsWin;
 let settingsResizeAnchor;
@@ -92,6 +92,28 @@ const flightBody = () => {
     Math.max(bounds[3] + offset, movement.visibleBounds[3])] });
 };
 const recoverBounds = bounds => recoverPosition(bounds, displayBounds, body());
+// Automatic movement stays near the place the user last chose (drag, reset,
+// resize or display recovery); manual placement itself remains unrestricted.
+function rememberHome() {
+  if (!win || win.isDestroyed()) return;
+  const { x, y } = win.getBounds(); settings.home = { x, y };
+}
+function motionAreas(readBody) {
+  return () => {
+    if (!settings.roamNearHome || !displayAreas.length) return areas();
+    const { area, home } = roamingArea(settings.home, win.getBounds(), readBody(), displayAreas, size.scale);
+    settings.home = home; return [area];
+  };
+}
+// Login items point at this project's Electron runtime in the development layout.
+const loginItem = () => app.isPackaged ? {} : { path: process.execPath, args: [root.includes(' ') ? `"${root}"` : root] };
+function launchAtLogin() {
+  try { return app.getLoginItemSettings(loginItem()).openAtLogin; } catch { return false; }
+}
+function setLaunchAtLogin(value) {
+  try { app.setLoginItemSettings({ openAtLogin: Boolean(value), ...loginItem() }); }
+  catch (error) { log(`Login item update failed: ${error.message}`); }
+}
 
 function model() {
   const clip = value => ({ ...value,
@@ -103,7 +125,8 @@ function model() {
     conditionalRandomEnabled: settings.conditionalRandomEnabled,
     randomActions: { rules: settings.randomActions, timeProfiles: config.randomPolicy.timeProfiles },
     flight: config.flight ? clip(config.flight) : null,
-    hover: config.hover ? { ...config.hover, enabled: true, greet: clip(config.hover.greet), fall: clip(config.hover.fall) } : null,
+    hover: config.hover ? { ...config.hover, greetEnabled: settings.hoverGreetingEnabled, enabled: true, greet: clip(config.hover.greet), fall: clip(config.hover.fall) } : null,
+    activityIdleMs: settings.activityIdleSec * 1000,
     activitySchedulingEnabled: settings.randomEnabled,
     activities: config.activities ? { ...config.activities, items: config.activities.items.map(item =>
       item.type === 'group' ? { ...item, start: clip(item.start), loop: clip(item.loop), end: clip(item.end) }
@@ -169,7 +192,12 @@ function applyPlaybackGate() {
     if (startupPresentation?.finished) {
       if (!win.isVisible()) { win.showInactive(); lastCursor = null; }
     } else if (startupPresentation && !startupPresentation.pending) {
-      startupPresentation.present().then(shown => { if (shown) applyPlaybackGate(); }).catch(error => log(`Startup presentation failed: ${error.message}`));
+      startupPresentation.present().then(shown => { if (shown) applyPlaybackGate(); }).catch(error => {
+        // Showing without the transparency warmup risks a brief dark frame, but
+        // is better than a pet which never appears and leaves only a tray icon.
+        log(`Startup presentation failed: ${error.message}; showing without warmup`);
+        if (startupPresentation.fallback()) { win.setOpacity(1); applyPlaybackGate(); }
+      });
     }
   }
   sync(); send('pet:visibility', state.visible);
@@ -191,7 +219,7 @@ function endDrag(point) {
   if (!dragMotion.active) return;
   if (!dragMotion.finish(validPoint(point) ? point : screen.getCursorScreenPoint())) return;
   send('pet:dragging', false);
-  queueSave();
+  rememberHome(); queueSave();
   lastCursor = null;
 }
 function resetPosition() {
@@ -201,7 +229,7 @@ function resetPosition() {
   const area = screen.getPrimaryDisplay().workArea;
   win.setBounds(constrain({ x: area.x + area.width - size.width - 48,
     y: area.y + area.height - size.height - 8, width: size.width, height: size.height }, areas()));
-  applyPlaybackGate();
+  rememberHome(); applyPlaybackGate();
   queueSave();
   lastCursor = null;
 }
@@ -217,7 +245,7 @@ function setHeight(height, anchor) {
   settings = next;
   size = nextSize;
   win.setBounds(recoverBounds(bounds));
-  sync(); queueSave(); lastCursor = null; positionSpeech();
+  rememberHome(); sync(); queueSave(); lastCursor = null; positionSpeech();
 }
 function setPaused(value) { setReason('user', value); }
 function setAvoidFullscreen(value) {
@@ -278,6 +306,9 @@ function beginMenu() {
 function endMenu() {
   if (!menuOpen) return;
   menuOpen = false; lastCursor = null;
+  // The renderer reports hit changes only. A miss reported while the menu was
+  // open was refused by setIgnored, so restore click-through from the latest report.
+  setIgnored(!hovered);
   send('pet:input-blocked', false);
 }
 function buildPetMenu() {
@@ -289,14 +320,25 @@ function buildPetMenu() {
 function rebuildTray() {
   if (!tray) return;
   trayMenu = buildPetMenu(); tray.setContextMenu(trayMenu);
+  const state = playbackGate.snapshot();
+  tray.setToolTip(config.title + (state.userHidden ? '（已隐藏，单击显示）' : state.userPaused ? '（已暂停）' : ''));
 }
+function trayClicked() {
+  // Wait briefly so a double-click toggles visibility without opening the menu first.
+  clearTimeout(trayClickTimer);
+  trayClickTimer = setTimeout(() => {
+    if (!tray) return;
+    if (playbackGate.snapshot().userHidden) toggleVisible(); else tray.popUpContextMenu(trayMenu);
+  }, 260);
+}
+function trayDoubleClicked() { clearTimeout(trayClickTimer); toggleVisible(); }
 function popup() {
   beginMenu(); buildPetMenu().popup({ window: win, callback: endMenu });
 }
 function trusted(event) { return win && event.sender === win.webContents && event.senderFrame === win.webContents.mainFrame; }
 
 function settingsModel() {
-  return { settings, minHeight: config.minHeight, maxHeight: config.maxHeight, defaultHeight: config.defaultHeight,
+  return { settings: { ...settings, launchAtLogin: launchAtLogin() }, activityIdleChoices, minHeight: config.minHeight, maxHeight: config.maxHeight, defaultHeight: config.defaultHeight,
     timeProfiles: config.randomPolicy.timeProfiles, defaults: config.randomPolicy.defaults,
     actions: [...(config.activities?.items ?? []).map(({ id, label }) => ({ id, label })),
       { id: 'run', label: '走两步' }, { id: 'flight', label: '撑伞移动' }],
@@ -313,7 +355,7 @@ async function openSettings() {
   const area = screen.getDisplayNearestPoint(screen.getCursorScreenPoint()).workArea;
   settingsWin = new BrowserWindow({ title: '桌宠设置', width: Math.min(440, area.width), height: Math.min(700, area.height - 24),
     minWidth: Math.min(390, area.width), minHeight: Math.min(480, area.height - 24),
-    show: false, backgroundColor: '#faf8f6', alwaysOnTop: settings.alwaysOnTop, autoHideMenuBar: true,
+    show: false, backgroundColor: nativeTheme.shouldUseDarkColors ? '#211d1b' : '#faf8f6', alwaysOnTop: settings.alwaysOnTop, autoHideMenuBar: true,
     icon: path.join(root, 'assets/icons/app.png'),
     webPreferences: { preload: path.join(__dirname, 'settings-preload.cjs'),
       contextIsolation: true, nodeIntegration: false, sandbox: true } });
@@ -342,6 +384,13 @@ function updateSettings(patch) {
   }
   for (const [key, setter] of [['alwaysOnTop', setTop], ['avoidFullscreen', setAvoidFullscreen], ['wanderEnabled', setWanderEnabled]]) {
     if (typeof patch[key] === 'boolean' && patch[key] !== settings[key]) setter(patch[key]);
+  }
+  if (typeof patch.launchAtLogin === 'boolean') setLaunchAtLogin(patch.launchAtLogin);
+  if (typeof patch.hoverGreetingEnabled === 'boolean') settings.hoverGreetingEnabled = patch.hoverGreetingEnabled;
+  if (activityIdleChoices.includes(patch.activityIdleSec)) settings.activityIdleSec = patch.activityIdleSec;
+  if (typeof patch.roamNearHome === 'boolean' && patch.roamNearHome !== settings.roamNearHome) {
+    settings.roamNearHome = patch.roamNearHome;
+    if (settings.roamNearHome) rememberHome();
   }
   if (typeof patch.randomEnabled === 'boolean') settings.randomEnabled = patch.randomEnabled;
   if (typeof patch.conditionalRandomEnabled === 'boolean') settings.conditionalRandomEnabled = patch.conditionalRandomEnabled;
@@ -392,7 +441,7 @@ else {
     win.once('ready-to-show', () => { firstPagePainted = true; applyPlaybackGate(); });
     const available = () => Boolean(win && !win.isDestroyed() && rendererReady && win.isVisible() &&
       !paused && !menuOpen && !dragMotion.active && !interactionBusy && !shuttingDown);
-    wanderMotion = new WanderMotion({ readBounds: () => win.getBounds(), readAreas: areas,
+    wanderMotion = new WanderMotion({ readBounds: () => win.getBounds(), readAreas: motionAreas(body),
       readScale: () => size.scale, readBody: body, canStart: manual => available() && !flightMotion?.active && (manual || !hovered), canContinue: available,
       durationMs: config.run.durationSec * 1000, leadInMs: config.run.leadInMs,
       leadOutMs: config.run.leadOutMs ?? 0,
@@ -402,7 +451,7 @@ else {
       onStart: payload => send('pet:run', payload),
       onStop: payload => { send('pet:run-stop', payload); lastCursor = null; if (!shuttingDown) queueSave(); },
     });
-    flightMotion = new FlightMotion({ readBounds: () => win.getBounds(), readAreas: areas,
+    flightMotion = new FlightMotion({ readBounds: () => win.getBounds(), readAreas: motionAreas(flightBody),
       readScale: () => size.scale, readBody: flightBody,
       canStart: manual => available() && !wanderMotion.active && (manual || !hovered), canContinue: available,
       durationMs: config.flight.durationSec * 1000, leadInMs: config.flight.leadInMs, leadOutMs: config.flight.leadOutMs,
@@ -415,6 +464,7 @@ else {
       y: Math.round(settings.position.y - ((config.idle.topPadding ?? 0) - savedTopPadding) * size.scale),
       width: size.width, height: size.height }));
     else resetPosition();
+    if (!settings.home) rememberHome();
     win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
     win.webContents.on('will-navigate', event => event.preventDefault());
     win.webContents.session.setPermissionRequestHandler((_contents, _permission, callback) => callback(false));
@@ -452,7 +502,8 @@ else {
       if (settings.wanderEnabled || manual === true) flightMotion.request(direction, manual === true);
     });
     ipcMain.on('pet:drag-start', (event, point, cursor) => {
-      if (!trusted(event) || paused || menuOpen || !win.isVisible() || !validPoint(point)) return;
+      // Dragging only moves the window, so it stays available while animation is paused.
+      if (!trusted(event) || menuOpen || !win.isVisible() || !validPoint(point)) return;
       wanderMotion.interrupt('drag');
       flightMotion.interrupt('drag');
       hideSpeech();
@@ -476,7 +527,8 @@ else {
     });
     tray = new Tray(nativeImage.createFromPath(path.join(root, 'assets/icons/tray.png')));
     tray.setToolTip(config.title);
-    tray.on('double-click', toggleVisible);
+    tray.on('click', trayClicked);
+    tray.on('double-click', trayDoubleClicked);
     rebuildTray();
     pointerTimer = setInterval(() => {
       if (!win || win.isDestroyed() || !rendererReady || !win.isVisible() || dragMotion.active) return;
@@ -491,7 +543,7 @@ else {
       wanderMotion.interrupt('display-change');
       flightMotion.interrupt('display-change');
       refreshAreas();
-      endDrag(); win.setBounds(recoverBounds(win.getBounds())); lastCursor = null; queueSave();
+      endDrag(); win.setBounds(recoverBounds(win.getBounds())); rememberHome(); lastCursor = null; queueSave();
     };
     screen.on('display-added', recover);
     screen.on('display-removed', recover);
@@ -530,7 +582,7 @@ else {
     }
   }).catch(error => {
     log(error.stack || error.message);
-    dialog.showErrorBox(config.title, '桌宠启动失败，详情见独立用户目录中的 runtime.log。');
+    dialog.showErrorBox(config.title, `桌宠启动失败，详情见运行日志：\n${logFile}`);
     app.exit(1);
   });
 }
@@ -547,7 +599,7 @@ app.on('before-quit', () => {
   flightMotion?.dispose();
   if (win && !win.isDestroyed()) endDrag();
   else dragMotion.stop();
-  clearInterval(pointerTimer); clearInterval(diagnosticsTimer); clearTimeout(saveTimer);
+  clearInterval(pointerTimer); clearInterval(diagnosticsTimer); clearTimeout(saveTimer); clearTimeout(trayClickTimer);
   saveNow(); tray?.destroy(); tray = null;
 });
 app.on('window-all-closed', () => app.quit());
