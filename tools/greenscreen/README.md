@@ -18,20 +18,20 @@
 
 ## 新增一个动作
 
-以“整理帽子”为例：
+以新动作 `new-action` 为例：
 
 ```powershell
 # 1. 抠像并对齐到待机姿势（人物高 252，脚底中心 x 319.5、y 320），角落水印会被去掉
-python tools/greenscreen/key.py 整理帽子.mov work/fix-cap
+python tools/greenscreen/key.py 新动作.mov work/new-action
 
 # 2. 校色并编码（首尾帧分别对准参考图，中间逐帧过渡）
-python tools/greenscreen/unify.py --out work/unified --raw fix-cap=work/fix-cap fix-cap
+python tools/greenscreen/unify.py --out work/unified --raw new-action=work/new-action new-action
 
 # 3. 核对首尾帧：头发与衣服任一部位超过 2.5 时返回失败
-python tools/greenscreen/check.py --max 2.5 work/unified/assets/animations/daily-idle-match-v001/fix-cap-v001-m01.webm
+python tools/greenscreen/check.py --max 2.5 work/unified/assets/animations/daily-idle-match-v001/new-action-v001-m01.webm
 
 # 4. 装进项目：复制视频、生成首帧图、写入配置与随机规则（ID:名称:时段:权重:冷却分钟）
-python tools/greenscreen/install.py --out work/unified --new fix-cap:整理帽子:any:3:5
+python tools/greenscreen/install.py --out work/unified --new new-action:新动作:any:3:5
 
 # 5. 全量复核，包括与待机之间的衔接
 python tools/greenscreen/audit.py
