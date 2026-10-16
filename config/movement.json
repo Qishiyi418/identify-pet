@@ -5,7 +5,7 @@
   "clips": {
     "idle": {
       "file": "assets/animations/idle-breathe.webm",
-      "sha256": "59f8c95045f13cefcfde413e89a92a92648139308edee98db3c1ba1ffb32f3f2",
+      "sha256": "7d3ba46a2faba920e6e09870bfe92b5e40cdb9b0d33da46b6c4eef40f15152f2",
       "frames": 121,
       "bounds": [
         221,
@@ -16,7 +16,7 @@
     },
     "run": {
       "file": "assets/animations/run-idle-match-v002/run-v002-m04.webm",
-      "sha256": "f7239d01a9d211d34f0a7800838b0daac1799c848183f11b1a1565748fca357c",
+      "sha256": "d2338397d8d3d21f780d273d5ddb8a3b5b9039c0c40a8ad80e749aed6d1fb310",
       "frames": 184,
       "bounds": [
         224,
