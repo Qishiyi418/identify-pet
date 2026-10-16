@@ -41,7 +41,7 @@
     "materialId": "idle-breathe-v004-m01",
     "file": "assets/animations/idle-breathe.webm",
     "poster": "assets/posters/idle-breathe.png",
-    "sha256": "59f8c95045f13cefcfde413e89a92a92648139308edee98db3c1ba1ffb32f3f2",
+    "sha256": "7d3ba46a2faba920e6e09870bfe92b5e40cdb9b0d33da46b6c4eef40f15152f2",
     "width": 640,
     "height": 360,
     "frames": 121,
@@ -65,30 +65,30 @@
     "file": "assets/animations/idle-match-v001/touch-head.webm",
     "poster": "assets/posters/idle-match-v001/touch-head.png",
     "materialId": "touch-head-v002-m01",
-    "sha256": "b3aca286e7383c5068eb1a30e88506fb80f072dd61a30a91c2eac2cc5fca3e63",
+    "sha256": "eb51c8815589fa1abf1f4e1ae876d49f9f193a2d73da87c5f7c8683dff84a1d5",
     "durationSec": 4.291666666666667,
     "frames": 103,
     "necklineY": 190,
     "playback": "restart-on-every-click",
-    "colorVariant": "idle-match-v001",
+    "colorVariant": "firstframe-match-v001",
     "colorProfile": "head"
   },
   "bodyTouch": {
     "file": "assets/animations/idle-match-v001/touch-body.webm",
     "poster": "assets/posters/idle-match-v001/touch-body.png",
     "materialId": "touch-body-v002-m01",
-    "sha256": "e039b47023ddadaa0c1b59d12f560aaebe0e80d39803b2c0912929efe36e0849",
+    "sha256": "b8e6893b476e0f87b037639dde1b775133cb8ecca754f2f95194ed3aa05a9021",
     "durationSec": 5.041666666666667,
     "frames": 121,
     "necklineY": 200,
-    "colorVariant": "idle-match-v001",
+    "colorVariant": "firstframe-match-v001",
     "colorProfile": "body"
   },
   "run": {
     "file": "assets/animations/run-idle-match-v002/run-v002-m04.webm",
     "poster": "assets/posters/run-idle-match-v002/run-v002-m04.png",
     "materialId": "run-v002-m04",
-    "sha256": "f7239d01a9d211d34f0a7800838b0daac1799c848183f11b1a1565748fca357c",
+    "sha256": "d2338397d8d3d21f780d273d5ddb8a3b5b9039c0c40a8ad80e749aed6d1fb310",
     "frames": 184,
     "fps": 24,
     "durationSec": 7.666666666666667,
@@ -98,7 +98,7 @@
     "leadInMs": 1100,
     "restMinMs": 8000,
     "restMaxMs": 16000,
-    "colorVariant": "run-idle-match-v002",
+    "colorVariant": "firstframe-match-v001",
     "colorProfile": "run",
     "leadOutMs": 250
   },
@@ -114,7 +114,7 @@
           "file": "assets/animations/idle-match-v001/high-knees-start-v001-m01.webm",
           "poster": "assets/posters/idle-match-v001/high-knees-start-v001-m01.png",
           "materialId": "high-knees-start-v001-m01",
-          "sha256": "102f4014545307b736d5dc00b1e3fb494c242002bb5564588a2bad3ae5a669e0",
+          "sha256": "cef888751b1e04e80759e68eef2083d1f652ce9f1abb792c783db94aa922f8a0",
           "width": 640,
           "height": 360,
           "frames": 29,
@@ -132,14 +132,14 @@
             "width": 396,
             "height": 300
           },
-          "colorVariant": "idle-match-v001",
+          "colorVariant": "firstframe-match-v001",
           "colorProfile": "high-knees"
         },
         "loop": {
           "file": "assets/animations/idle-match-v001/high-knees-loop-v001-m01.webm",
           "poster": "assets/posters/idle-match-v001/high-knees-loop-v001-m01.png",
           "materialId": "high-knees-loop-v001-m01",
-          "sha256": "f7632c9132f0346ce45e1e9a21f9a7f8cd24777e120f2a3b6ac8dbed5c4b8079",
+          "sha256": "d34fb6665eca8066d62acb8bfc468413f85556ae27428cd8af0fc6a22afabcf2",
           "width": 640,
           "height": 360,
           "frames": 140,
@@ -157,14 +157,14 @@
             "width": 396,
             "height": 300
           },
-          "colorVariant": "idle-match-v001",
+          "colorVariant": "firstframe-match-v001",
           "colorProfile": "high-knees"
         },
         "end": {
           "file": "assets/animations/idle-match-v001/high-knees-end-v001-m01.webm",
           "poster": "assets/posters/idle-match-v001/high-knees-end-v001-m01.png",
           "materialId": "high-knees-end-v001-m01",
-          "sha256": "e83e8d94626c12f01bddd1dd77b5b1efbe1f6c89a370f5a1429067a2c413abfd",
+          "sha256": "41d622999774245a034a41fb6c2d8d539d5c6f530ae83459ab120afa01b698f2",
           "width": 640,
           "height": 360,
           "frames": 74,
@@ -182,7 +182,7 @@
             "width": 396,
             "height": 300
           },
-          "colorVariant": "idle-match-v001",
+          "colorVariant": "firstframe-match-v001",
           "colorProfile": "high-knees"
         }
       },
@@ -194,7 +194,7 @@
           "file": "assets/animations/idle-match-v001/sleepy-start-v001-m01.webm",
           "poster": "assets/posters/idle-match-v001/sleepy-start-v001-m01.png",
           "materialId": "sleepy-start-v001-m01",
-          "sha256": "5637429f893974e93e927dd74f8926bb8a0a40bda12d85ef8974576a342147e7",
+          "sha256": "248a5a643c2b2a764b2a993d22135e214c0f2d85cc883a99005e7094703e2100",
           "width": 640,
           "height": 360,
           "frames": 106,
@@ -212,14 +212,14 @@
             "width": 396,
             "height": 300
           },
-          "colorVariant": "idle-match-v001",
+          "colorVariant": "firstframe-match-v001",
           "colorProfile": "sleepy"
         },
         "loop": {
           "file": "assets/animations/idle-match-v001/sleepy-loop-v003-m01.webm",
           "poster": "assets/posters/idle-match-v001/sleepy-loop-v003-m01.png",
           "materialId": "sleepy-loop-v003-m01",
-          "sha256": "710385d6bf8ebcfc07d3a24f0151a156f2b810eb41d615ece743e92e34ac5666",
+          "sha256": "82f2eb5fe699144600385804ffe1ebcb6540507f494174db9de03e6f69aa6ea0",
           "width": 640,
           "height": 360,
           "frames": 42,
@@ -237,7 +237,7 @@
             "width": 396,
             "height": 300
           },
-          "colorVariant": "idle-match-v001",
+          "colorVariant": "firstframe-match-v001",
           "colorProfile": "sleepy",
           "exitAtSec": 0,
           "minExitRate": 0.94,
@@ -247,7 +247,7 @@
           "file": "assets/animations/idle-match-v001/sleepy-end-v003-m01.webm",
           "poster": "assets/posters/idle-match-v001/sleepy-end-v003-m01.png",
           "materialId": "sleepy-end-v003-m01",
-          "sha256": "68c52240b1c0c56b3764d3e50201b0eaec0ca8c71a734901659213e291f70c42",
+          "sha256": "ad36b10528e203d2739efcd6793a712702ba50726f69771c2df701394daa18e4",
           "width": 640,
           "height": 360,
           "frames": 137,
@@ -265,7 +265,7 @@
             "width": 396,
             "height": 300
           },
-          "colorVariant": "idle-match-v001",
+          "colorVariant": "firstframe-match-v001",
           "colorProfile": "sleepy"
         }
       },
@@ -277,7 +277,7 @@
           "file": "assets/animations/idle-match-v001/candy-start-v001-m01.webm",
           "poster": "assets/posters/idle-match-v001/candy-start-v001-m01.png",
           "materialId": "candy-start-v001-m01",
-          "sha256": "3b19fcc3f0f0e3dc03dc26498ae68d9c94efd41d7099c10433caeb960a034128",
+          "sha256": "68b9aeac03aa20b7c1130817f546e5d1af2f082a36b44bf180b14e3b4a67d57c",
           "width": 640,
           "height": 360,
           "frames": 102,
@@ -295,14 +295,14 @@
             "width": 396,
             "height": 300
           },
-          "colorVariant": "idle-match-v001",
+          "colorVariant": "firstframe-match-v001",
           "colorProfile": "candy"
         },
         "loop": {
           "file": "assets/animations/idle-match-v001/candy-loop-v002-m01.webm",
           "poster": "assets/posters/idle-match-v001/candy-loop-v002-m01.png",
           "materialId": "candy-loop-v002-m01",
-          "sha256": "c31fa6600ef61e5c81dc65d46dfe3eb1b0f62ef7df040a374dec8c605ec4acbe",
+          "sha256": "5287370031daba45e6fb2ef47e7bf3d6336f505c16359ebc659d2466dcb72703",
           "width": 640,
           "height": 360,
           "frames": 113,
@@ -320,7 +320,7 @@
             "width": 396,
             "height": 300
           },
-          "colorVariant": "idle-match-v001",
+          "colorVariant": "firstframe-match-v001",
           "colorProfile": "candy",
           "temporalEdit": "extra-half-cycle-moved-from-loop-to-end",
           "exitAtSec": 0,
@@ -331,7 +331,7 @@
           "file": "assets/animations/idle-match-v001/candy-end-v002-m01.webm",
           "poster": "assets/posters/idle-match-v001/candy-end-v002-m01.png",
           "materialId": "candy-end-v002-m01",
-          "sha256": "fdbedb89560ac3c9dc7c1716fc04761aefc19d7357f2d627158b88c459526e65",
+          "sha256": "a877d66ac796460bbd34f0443c60f2a2aa2046ef54857cc07ce57a47a59962a1",
           "width": 640,
           "height": 360,
           "frames": 140,
@@ -349,7 +349,7 @@
             "width": 396,
             "height": 300
           },
-          "colorVariant": "idle-match-v001",
+          "colorVariant": "firstframe-match-v001",
           "colorProfile": "candy",
           "temporalEdit": "extra-half-cycle-moved-from-loop-to-end"
         }
@@ -362,7 +362,7 @@
           "file": "assets/animations/idle-match-v001/homework-start-v001-m01.webm",
           "poster": "assets/posters/idle-match-v001/homework-start-v001-m01.png",
           "materialId": "homework-start-v001-m01",
-          "sha256": "43e66da215e71c0a67c7e85779dfa9ef1588b1e4494cf02d2975232e06a68025",
+          "sha256": "c042a506e51d5a2b6591ffcab1881068238543ff2a02ade500d87f30f90060ae",
           "width": 640,
           "height": 360,
           "frames": 46,
@@ -380,14 +380,14 @@
             "width": 396,
             "height": 300
           },
-          "colorVariant": "idle-match-v001",
+          "colorVariant": "firstframe-match-v001",
           "colorProfile": "homework"
         },
         "loop": {
           "file": "assets/animations/idle-match-v001/homework-loop-v001-m01.webm",
           "poster": "assets/posters/idle-match-v001/homework-loop-v001-m01.png",
           "materialId": "homework-loop-v001-m01",
-          "sha256": "f31cd05123a3dfa04680ff18289d72625184117446e917130d7bb9c085f76ab8",
+          "sha256": "b42a1cea0412f779b46caa15d417e7f2c0c613c724cf515610a891768339b8fe",
           "width": 640,
           "height": 360,
           "frames": 46,
@@ -405,14 +405,14 @@
             "width": 396,
             "height": 300
           },
-          "colorVariant": "idle-match-v001",
+          "colorVariant": "firstframe-match-v001",
           "colorProfile": "homework"
         },
         "end": {
           "file": "assets/animations/idle-match-v001/homework-end-v001-m01.webm",
           "poster": "assets/posters/idle-match-v001/homework-end-v001-m01.png",
           "materialId": "homework-end-v001-m01",
-          "sha256": "077e826ab6bba444c234be40c8b977fefa26b06587373619f76b1d43fb6b3674",
+          "sha256": "e83c6d6692f48988f05e8fe505a32c455e8ff3cf7cc461ba79d166950be208b1",
           "width": 640,
           "height": 360,
           "frames": 46,
@@ -430,7 +430,7 @@
             "width": 396,
             "height": 300
           },
-          "colorVariant": "idle-match-v001",
+          "colorVariant": "firstframe-match-v001",
           "colorProfile": "homework"
         }
       },
@@ -442,7 +442,7 @@
           "file": "assets/animations/idle-match-v001/gaming-segment-v001-m01.webm",
           "poster": "assets/posters/idle-match-v001/gaming-segment-v001-m01.png",
           "materialId": "gaming-segment-v001-m01",
-          "sha256": "24427f4daf72b60e0b287ddb8380c6cdf731f8add3495ea76db9568efaa80fe4",
+          "sha256": "6a6ec826f23e1f2e3beae8ce0e79ba5fbc481f43e53b1c60bf6cc7e3de69b3e5",
           "width": 640,
           "height": 360,
           "frames": 241,
@@ -460,7 +460,7 @@
             "width": 396,
             "height": 300
           },
-          "colorVariant": "idle-match-v001",
+          "colorVariant": "firstframe-match-v001",
           "colorProfile": "gaming"
         }
       },
@@ -472,7 +472,7 @@
           "file": "assets/animations/idle-match-v001/high-knees-single-segment-v001-m01.webm",
           "poster": "assets/posters/idle-match-v001/high-knees-single-segment-v001-m01.png",
           "materialId": "high-knees-single-segment-v001-m01",
-          "sha256": "739cd81e861672f4acb6f607aa3811b93a2ce395cf7d835f3353707b985c63b4",
+          "sha256": "0a94b57dbc7b5adb01460179314f549532489a7919c66bc075805f30fc966680",
           "width": 640,
           "height": 360,
           "frames": 193,
@@ -490,7 +490,7 @@
             "width": 396,
             "height": 300
           },
-          "colorVariant": "idle-match-v001",
+          "colorVariant": "firstframe-match-v001",
           "colorProfile": "high-knees-single"
         }
       },
@@ -502,7 +502,7 @@
           "file": "assets/animations/new-actions-idle-match-v001/drink-v001-m01.webm",
           "poster": "assets/posters/new-actions-idle-match-v001/drink-v001-m01.png",
           "materialId": "drink-v001-m01",
-          "sha256": "521322972100420e7ab1f5b0f2bdd366d3284653179a380399bff9606439355d",
+          "sha256": "88fbdb67c34baa84905f560fe6b57b8474c5ce1134d018ec270c89ca8322786d",
           "width": 640,
           "height": 360,
           "fps": 24,
@@ -520,7 +520,7 @@
             "width": 396,
             "height": 300
           },
-          "colorVariant": "new-actions-idle-match-v001",
+          "colorVariant": "firstframe-match-v001",
           "colorProfile": "drink",
           "normalization": {
             "standingHeight": 252,
@@ -540,7 +540,7 @@
           "file": "assets/animations/new-actions-idle-match-v001/eat-v001-m01.webm",
           "poster": "assets/posters/new-actions-idle-match-v001/eat-v001-m01.png",
           "materialId": "eat-v001-m01",
-          "sha256": "2e0089b9468927fd86189c94be04642aff8ff3f4b35758cebb199c1946e2adfc",
+          "sha256": "a8e1bdac56451730deed007e13b7489b29aaa3d6261ed66e3752dffe9cbdad03",
           "width": 640,
           "height": 360,
           "fps": 24,
@@ -558,7 +558,7 @@
             "width": 396,
             "height": 300
           },
-          "colorVariant": "new-actions-idle-match-v001",
+          "colorVariant": "firstframe-match-v001",
           "colorProfile": "eat",
           "normalization": {
             "standingHeight": 252,
@@ -578,7 +578,7 @@
           "file": "assets/animations/new-actions-idle-match-v001/soccer-v001-m01.webm",
           "poster": "assets/posters/new-actions-idle-match-v001/soccer-v001-m01.png",
           "materialId": "soccer-v001-m01",
-          "sha256": "0cbc3ec004e586e27bdd8862da5d7b7ea464f1c25a92b0eb1d19781c1b6cedfd",
+          "sha256": "2ef94723a849efbaaa5b6875f5ac9039f5e2aef97e8c435a8986757e5f68c769",
           "width": 640,
           "height": 360,
           "fps": 24,
@@ -596,7 +596,7 @@
             "width": 396,
             "height": 300
           },
-          "colorVariant": "new-actions-idle-match-v001",
+          "colorVariant": "firstframe-match-v001",
           "colorProfile": "soccer",
           "normalization": {
             "standingHeight": 252,
@@ -616,7 +616,7 @@
           "file": "assets/animations/daily-idle-match-v001/look-around-v001-m03.webm",
           "poster": "assets/posters/daily-idle-match-v001/look-around-v001-m03.png",
           "materialId": "look-around-v001-m03",
-          "sha256": "ae8a64aa48959329b6b60b7717a396cb2e0d78d89c6efd365ef46efa5ded749c",
+          "sha256": "850b34273d161c457ed6b772456f62e10f7b35e8948dda12d984c12a4101ef0b",
           "width": 640,
           "height": 360,
           "fps": 24,
@@ -634,8 +634,84 @@
             "width": 396,
             "height": 300
           },
-          "colorVariant": "daily-idle-match-v001",
+          "colorVariant": "firstframe-match-v001",
           "colorProfile": "look-around",
+          "normalization": {
+            "standingHeight": 252,
+            "footAnchor": [
+              320,
+              321
+            ],
+            "fixedTransformPerClip": true
+          }
+        }
+      },
+      {
+        "id": "stretch",
+        "label": "伸懒腰",
+        "type": "single",
+        "segment": {
+          "file": "assets/animations/daily-idle-match-v001/stretch-v001-m01.webm",
+          "poster": "assets/posters/daily-idle-match-v001/stretch-v001-m01.png",
+          "materialId": "stretch-v001-m01",
+          "sha256": "cd647ca8677ead84dd71f5f55a2c591ca76290467baa59b4a956348ee517ec12",
+          "width": 640,
+          "height": 360,
+          "fps": 24,
+          "frames": 241,
+          "durationSec": 10.041666666666666,
+          "mirrorAllowed": false,
+          "visibleHeight": 260,
+          "foot": [
+            320,
+            321
+          ],
+          "viewport": {
+            "x": 168,
+            "y": 32,
+            "width": 396,
+            "height": 300
+          },
+          "colorVariant": "firstframe-match-v001",
+          "colorProfile": "stretch",
+          "normalization": {
+            "standingHeight": 252,
+            "footAnchor": [
+              320,
+              321
+            ],
+            "fixedTransformPerClip": true
+          }
+        }
+      },
+      {
+        "id": "reading",
+        "label": "看书",
+        "type": "single",
+        "segment": {
+          "file": "assets/animations/daily-idle-match-v001/reading-v001-m01.webm",
+          "poster": "assets/posters/daily-idle-match-v001/reading-v001-m01.png",
+          "materialId": "reading-v001-m01",
+          "sha256": "3948a80a3a6217437ad98c72ac9fa4d230e36f4ce52791d6e4ba5c8f4a7bb7de",
+          "width": 640,
+          "height": 360,
+          "fps": 24,
+          "frames": 361,
+          "durationSec": 15.041666666666666,
+          "mirrorAllowed": false,
+          "visibleHeight": 260,
+          "foot": [
+            320,
+            321
+          ],
+          "viewport": {
+            "x": 168,
+            "y": 32,
+            "width": 396,
+            "height": 300
+          },
+          "colorVariant": "firstframe-match-v001",
+          "colorProfile": "reading",
           "normalization": {
             "standingHeight": 252,
             "footAnchor": [
@@ -653,22 +729,22 @@
       "file": "assets/animations/idle-match-v001/drag-hold.webm",
       "poster": "assets/posters/idle-match-v001/drag-hold.png",
       "materialId": "drag-hold-v001-m01",
-      "sha256": "7042f353cee4583077d8c5ef55f2482d850dd6a4522d8aea57c748bbd508b9c5",
+      "sha256": "89b0506822eb0c255da9f25d9b6ff377e9e5e11ebaa74f122751d10750ec7351",
       "frames": 29,
       "durationSec": 1.2083333333333333,
       "fps": 24,
-      "colorVariant": "idle-match-v001",
+      "colorVariant": "firstframe-match-v001",
       "colorProfile": "drag"
     },
     "release": {
       "file": "assets/animations/idle-match-v001/drag-release.webm",
       "poster": "assets/posters/idle-match-v001/drag-release.png",
       "materialId": "drag-release-v001-m02",
-      "sha256": "4bcb3a209ad659887b957356ac6f69621bf87ed464a7731a50891dfa5542cbcd",
+      "sha256": "5d8fa73e4597568386ecc96598fabf9d348d02bd1c455434b06ab94f928e1521",
       "frames": 159,
       "durationSec": 6.625,
       "fps": 24,
-      "colorVariant": "idle-match-v001",
+      "colorVariant": "firstframe-match-v001",
       "colorProfile": "drag"
     }
   },
@@ -681,7 +757,7 @@
       "file": "assets/animations/hover-idle-match-v001/greet-v002-m01.webm",
       "poster": "assets/posters/hover-idle-match-v001/greet-v002-m01.png",
       "materialId": "greet-v002-m01",
-      "sha256": "2885a2e7f93e017d6403caf5577e4860847e63d4fc452950f33192d089d74ce7",
+      "sha256": "7b2a270e86dbd8d034ec5116a53d5244d144a6050f10777bb435820883be0f5b",
       "width": 640,
       "height": 360,
       "frames": 174,
@@ -699,12 +775,12 @@
         "width": 396,
         "height": 300
       },
-      "colorVariant": "hover-idle-match-v001",
+      "colorVariant": "firstframe-match-v001",
       "normalization": {
         "standingHeight": 252,
         "referenceFrame": 0,
         "referenceAlphaThreshold": 32,
-        "referenceSha256": "59f8c95045f13cefcfde413e89a92a92648139308edee98db3c1ba1ffb32f3f2",
+        "referenceSha256": "7d3ba46a2faba920e6e09870bfe92b5e40cdb9b0d33da46b6c4eef40f15152f2",
         "footAnchor": [
           320,
           321
@@ -716,7 +792,7 @@
       "file": "assets/animations/hover-idle-match-v001/fall-v001-m03.webm",
       "poster": "assets/posters/hover-idle-match-v001/fall-v001-m03.png",
       "materialId": "fall-v001-m03",
-      "sha256": "2caa440fb76f4073a0e6e1ab4321f84306a7f3ff43c468c39a173a1f4ea9fabe",
+      "sha256": "9208ee6e8528d963f0887f610b1952d08d93e95790ef6de93d20e7c52086f702",
       "width": 640,
       "height": 360,
       "frames": 87,
@@ -734,7 +810,7 @@
         "width": 396,
         "height": 300
       },
-      "colorVariant": "hover-idle-match-v001",
+      "colorVariant": "firstframe-match-v001",
       "sourceDirection": "left"
     }
   },
@@ -742,7 +818,7 @@
     "materialId": "umbrella-flight-v001",
     "file": "assets/animations/flight-idle-match-v001/umbrella-flight-v001.webm",
     "poster": "assets/posters/flight-idle-match-v001/umbrella-flight-v001.png",
-    "sha256": "2787fb8edbdfcb6975409c1a3827767518a848c1508d0aca0f8197f96b3983bd",
+    "sha256": "d365664ca4fe0228600980c8a909474c4b22cc92c5528c884c0cd2e7ff8cac33",
     "width": 640,
     "height": 460,
     "offsetY": -100,
@@ -761,7 +837,7 @@
     "leadOutMs": 250,
     "axis": "z",
     "movement": "one-direction-per-flight",
-    "colorVariant": "flight-idle-match-v001"
+    "colorVariant": "firstframe-match-v001"
   },
   "randomPolicy": {
     "timeProfiles": {
@@ -910,6 +986,18 @@
         "weight": 4,
         "timeProfile": "any",
         "cooldownMs": 180000
+      },
+      "stretch": {
+        "enabled": true,
+        "weight": 3,
+        "timeProfile": "dayPreferred",
+        "cooldownMs": 600000
+      },
+      "reading": {
+        "enabled": true,
+        "weight": 3,
+        "timeProfile": "dayPreferred",
+        "cooldownMs": 600000
       },
       "run": {
         "enabled": true,
