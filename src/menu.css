@@ -1,0 +1,50 @@
+:root { color-scheme: light; --card: #ffffff; --chip: #f3f2f6; --chip-ink: #2a2631; --ink: #23202a; --muted: #77727f; --stitch-line: #c9c5d1;
+  --patch: #d23b48; --patch-ink: #ffffff; --stitch: #ffffffd0; --focus: #3a64b0; --track: #d6d3dc; --edge: #23202a1a;
+  --shadow: 0 1px 0 #23202a0f, 0 8px 22px #23202a2e; }
+@media (prefers-color-scheme: dark) {
+  :root { color-scheme: dark; --card: #25222b; --chip: #302c37; --chip-ink: #efedf3; --ink: #f2f0f5; --muted: #a39dad; --stitch-line: #4c4756;
+    --patch: #d9434f; --focus: #7fa4e8; --track: #4a4553; --edge: #ffffff14; --shadow: 0 10px 26px #00000073; }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: transparent; overflow: hidden; }
+body { padding: 12px; color: var(--ink); font: 13px/1.4 "Microsoft YaHei UI", "Microsoft YaHei", "Segoe UI Variable Text", sans-serif; user-select: none; cursor: default; }
+.sprite { position: absolute; }
+.card { width: 284px; padding: 6px; background: var(--card); border-radius: 16px; box-shadow: 0 0 0 1px var(--edge), var(--shadow); outline: none;
+  opacity: 0; transform: translateY(-3px) scale(.97); }
+.card.open { opacity: 1; transform: none; transition: opacity .12s ease-out, transform .18s cubic-bezier(.2, .9, .3, 1.15); }
+.icon { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Every item shares the signature hover: a red felt patch with a stitched inner edge. */
+.item { position: relative; display: flex; align-items: center; margin: 0; border: 0; border-radius: 10px; background: transparent; color: var(--chip-ink); font: inherit; cursor: default; outline: none; }
+.item::after { content: ""; position: absolute; inset: 3px; border: 1.3px dashed transparent; border-radius: 7px; pointer-events: none; }
+.item.active:not(:disabled) { background: var(--patch); color: var(--patch-ink); }
+.item.active:not(:disabled)::after { border-color: var(--stitch); }
+.item:disabled { opacity: .38; }
+.keyboard .item.active:not(:disabled) { box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--focus); }
+
+.quick { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+.tile { flex-direction: column; justify-content: center; gap: 5px; height: 62px; padding: 0; background: var(--chip); font-size: 11px; white-space: nowrap; }
+.tile .icon { width: 22px; height: 22px; }
+
+.label { margin: 0 8px 6px; color: var(--muted); font-size: 11px; letter-spacing: .08em; }
+/* Chips keep their natural width and grow to fill each row, so rows end flush without empty cells. */
+.acts { display: flex; flex-wrap: wrap; gap: 4px; }
+.chip { flex: 1 0 auto; justify-content: center; height: 31px; padding: 0 8px; border-radius: 8px; background: var(--chip); font-size: 12.5px; white-space: nowrap; }
+.chip::after { border-radius: 5px; }
+
+.row { width: 100%; gap: 10px; height: 34px; padding: 0 10px; font-size: 13px; text-align: left; }
+.row span { flex: 1; }
+.row .icon { width: 18px; height: 18px; color: var(--muted); }
+.row.active:not(:disabled) .icon { color: inherit; }
+.row.quiet { color: var(--muted); }
+.switch { position: relative; flex: none; width: 28px; height: 16px; border-radius: 8px; background: var(--track); transition: background-color .14s; }
+.switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px #00000033; transition: transform .14s; }
+[aria-checked="true"] .switch { background: var(--patch); }
+[aria-checked="true"] .switch::after { transform: translateX(12px); }
+.row.active[aria-checked="true"] .switch { background: #ffffff5c; }
+
+/* Divider: a row of the X stitches from her cap. */
+.stitch { height: 6px; margin: 8px 10px; background: var(--stitch-line);
+  -webkit-mask: url('../assets/icons/stitch.svg') left center / 9px 6px repeat-x; mask: url('../assets/icons/stitch.svg') left center / 9px 6px repeat-x; }
+
+@media (prefers-reduced-motion: reduce) { .card { transform: none; } .card.open, .switch, .switch::after { transition: none; } }

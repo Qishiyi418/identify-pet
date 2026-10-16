@@ -7,6 +7,8 @@
   const toggles = ['randomEnabled', 'conditionalRandomEnabled', 'wanderEnabled', 'roamNearHome', 'hoverGreetingEnabled', 'alwaysOnTop', 'avoidFullscreen', 'launchAtLogin'];
   const idleLabels = { 15: '活泼（15 秒）', 60: '适中（1 分钟）', 180: '安静（3 分钟）' };
   function saving(text, error = false) { status.textContent = text; status.dataset.error = String(error); }
+  // Range tracks fill up to the thumb in the accent colour.
+  function paint(input) { const span = Number(input.max) - Number(input.min); input.style.setProperty('--pct', (span ? (input.value - input.min) / span * 100 : 0) + '%'); }
   function queue(patch) {
     pending = { ...pending, ...patch, randomActions: patch.randomActions
       ? { ...(pending.randomActions ?? {}), ...patch.randomActions } : pending.randomActions };
@@ -62,7 +64,7 @@
       }
       input.disabled = field === 'enabled' ? !globalEnabled : disabled;
     }
-    row.querySelector('output').textContent = String(rule.weight);
+    row.querySelector('output').textContent = String(rule.weight); paint(controls.weight);
     row.querySelector('.rule-status').textContent = !globalEnabled ? '规则未启用' : !rule.enabled || rule.weight === 0 ? '不随机播放' : '参与随机';
     row.querySelector('.rule-note').textContent = model.timeProfiles[rule.timeProfile].description;
   }
@@ -70,7 +72,7 @@
     model = data;
     $('height').min = data.minHeight; $('height').max = data.maxHeight; $('height').disabled = false;
     if (document.activeElement !== $('height')) $('height').value = data.settings.height;
-    $('height-value').textContent = $('height').value + ' px';
+    $('height-value').textContent = $('height').value; paint($('height'));
     $('height-min').textContent = data.minHeight; $('height-max').textContent = data.maxHeight;
     for (const id of toggles) { $(id).checked = data.settings[id]; $(id).disabled = false; }
     $('roamNearHome').disabled = !data.settings.wanderEnabled;
@@ -98,7 +100,7 @@
       selectTab(next); next.focus();
     });
   }
-  $('height').addEventListener('input', () => { $('height-value').textContent = $('height').value + ' px'; queue({ height: Number($('height').value) }); });
+  $('height').addEventListener('input', () => { $('height-value').textContent = $('height').value; paint($('height')); queue({ height: Number($('height').value) }); });
   $('reset-size').addEventListener('click', () => { $('height').value = model.defaultHeight; queue({ height: model.defaultHeight }); });
   for (const id of toggles) $(id).addEventListener('change', () => queue({ [id]: $(id).checked }));
   $('activityIdleSec').addEventListener('change', () => queue({ activityIdleSec: Number($('activityIdleSec').value) }));

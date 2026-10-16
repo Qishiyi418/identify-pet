@@ -9,7 +9,7 @@
 </head>
 <body>
   <header class="heading">
-    <img src="../assets/icons/app.png" alt="拉拉队员头像" width="48" height="48">
+    <span class="avatar"><img src="../assets/icons/app.png" alt="拉拉队员头像" width="52" height="52"></span>
     <div><p class="brand">拉拉队员桌宠</p><h1>桌宠设置</h1></div>
     <span id="save-status" role="status" aria-live="polite">正在读取</span>
   </header>
@@ -19,14 +19,14 @@
   </nav>
   <main>
     <section id="general" role="tabpanel" aria-labelledby="tab-general">
-      <section class="size-section" aria-labelledby="size-title">
-        <div class="section-heading"><h2 id="size-title">人物大小</h2><output id="height-value" for="height">—</output></div>
+      <section class="panel size-section" aria-labelledby="size-title">
+        <div class="section-heading"><h2 id="size-title">人物大小</h2><p class="readout"><output id="height-value" for="height">—</output><span>px</span></p></div>
         <label class="sr-only" for="height">人物大小</label>
         <input id="height" type="range" min="160" max="420" step="1" disabled>
         <div class="range-ends"><span id="height-min">160</span><span id="height-max">420</span></div>
         <div class="size-foot"><p>拖动滑块，人物会实时缩放。</p><button id="reset-size" class="text-button">恢复默认</button></div>
       </section>
-      <section class="behavior-section" aria-labelledby="behavior-title">
+      <section class="panel behavior-section" aria-labelledby="behavior-title">
         <h2 id="behavior-title">日常行为</h2>
         <label class="toggle-row"><span><strong>随机播放动作</strong><small>待机一段时间后自己找点事做，分组持续 30 秒</small></span><input id="randomEnabled" class="switch" type="checkbox" disabled></label>
         <div class="toggle-row"><span><strong><label for="activityIdleSec">动作频率</label></strong><small>连续待机多久后开始下一个随机动作</small></span><select id="activityIdleSec" class="compact-select" disabled></select></div>
@@ -44,7 +44,7 @@
       <div class="random-intro"><h2>让动作更合时宜</h2><p>“优先”会提高合适时段的出现概率，“仅”会限制出现时段。再结合冷却与权重抽选；权重 0 即关闭。手动点播不受限制。</p></div>
       <p id="random-disabled" class="notice" hidden>随机播放已关闭，可在“常用设置”中开启。</p>
       <p id="conditions-disabled" class="notice" hidden>当前使用原来的等概率随机，以下规则暂不生效。可在“常用设置”中开启条件选择。</p>
-      <div id="action-rules"></div>
+      <div id="action-rules" class="panel rules"></div>
       <button id="reset-random" class="text-button reset-random">恢复默认随机规则</button>
     </section>
   </main>

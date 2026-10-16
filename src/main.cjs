@@ -1,5 +1,5 @@
 'use strict';
-const { app, BrowserWindow, ipcMain, Menu, Tray, nativeImage, nativeTheme, screen, dialog, powerMonitor } = require('electron');
+const { app, BrowserWindow, ipcMain, Tray, nativeImage, nativeTheme, screen, dialog, powerMonitor } = require('electron');
 const fs = require('node:fs');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
@@ -25,9 +25,11 @@ if (process.platform === 'win32') app.disableHardwareAcceleration();
 app.setPath('userData', path.join(app.getPath('appData'), config.dataDirectory));
 app.setPath('sessionData', path.join(app.getPath('userData'), 'chromium'));
 
-let win, tray, trayMenu, trayClickTimer, pointerTimer, diagnosticsTimer, saveTimer;
+let win, tray, trayClickTimer, pointerTimer, diagnosticsTimer, saveTimer;
 let speechWin, speechReady, speechTimer, speechText = '', speechBelow = false, speechRevision = 0;
 let settingsWin;
+let menuWin, menuReady, menuPoint, menuFocusTimer, menuToken = 0;
+const MENU_MARGIN = 12; // transparent edge around the menu card, matching body padding in menu.css
 let settingsResizeAnchor;
 let settings, size, paused = false, ignored = false, menuOpen = false;
 let displayAreas = [], displayBounds = [];
@@ -163,7 +165,7 @@ function positionSpeech() {
   const x = Math.round(Math.max(area.x, Math.min(anchor.x - width / 2, area.x + area.width - width)));
   const y = Math.round(Math.max(area.y, Math.min(desiredY, area.y + area.height - height)));
   speechWin.setBounds({ x, y, width, height }, false);
-  speechWin.webContents.send('pet:speech-message', { text: speechText, below: speechBelow });
+  speechWin.webContents.send('pet:speech-message', { text: speechText, below: speechBelow, revision: speechRevision });
 }
 async function showSpeech(value) {
   if (value === null) { hideSpeech(); return; }
@@ -178,7 +180,7 @@ async function showSpeech(value) {
   speechTimer = setTimeout(hideSpeech, duration);
 }
 function sync() {
-  send('pet:state', model()); rebuildTray();
+  send('pet:state', model()); updateTray();
   if (settingsWin && !settingsWin.isDestroyed()) settingsWin.webContents.send('pet:settings-state', settingsModel());
 }
 function applyPlaybackGate() {
@@ -272,29 +274,44 @@ function toggleVisible() {
   endDrag();
   setReason('hidden', !playbackGate.snapshot().userHidden);
 }
-function template() {
-  return [
-    { label: '播放动作', enabled: !paused, submenu: [
-      { label: '摸摸头', click: () => send('pet:head-touch') },
-      { label: '互动回应', click: () => send('pet:body-touch') },
-      { type: 'separator' },
-      ...(config.activities?.items ?? []).map(item => ({ label: item.label,
-        click: () => send('pet:ambient', { id: item.id }) })),
-    ] },
-    { id: 'manual-run', label: '走两步', enabled: !paused && rendererReady && Boolean(win?.isVisible()),
-      click: () => { endMenu(); send('pet:manual-run'); } },
-    ...(config.flight ? [{ label: '撑伞移动', submenu: ['up', 'down'].map(direction => ({ id: `flight-${direction}`,
-      label: direction === 'up' ? '撑伞上升' : '撑伞下降',
-      enabled: !paused && rendererReady && Boolean(win?.isVisible()),
-      click: () => { endMenu(); send('pet:manual-flight', { direction }); } })) }] : []),
-    { type: 'separator' },
-    { label: playbackGate.snapshot().userPaused ? '恢复动画' : '暂停动画', click: () => setPaused(!playbackGate.snapshot().userPaused) },
-    { label: playbackGate.snapshot().userHidden ? '显示桌宠' : '隐藏桌宠', click: toggleVisible },
-    { id: 'settings', label: '桌宠设置…', click: () => { endMenu(); openSettings(); } },
-    { label: '恢复位置', click: resetPosition },
-    { type: 'separator' },
-    { label: '退出', click: () => app.quit() },
-  ];
+function menuModel() {
+  const gate = playbackGate.snapshot();
+  const movable = !paused && rendererReady && Boolean(win?.isVisible());
+  return {
+    quick: [
+      { id: 'head-touch', label: '摸摸头', icon: 'cap', enabled: !paused },
+      { id: 'body-touch', label: '互动回应', icon: 'heart', enabled: !paused },
+      { id: 'run', label: '走两步', icon: 'shoe', enabled: movable },
+      ...(config.flight ? [{ id: 'flight-up', label: '撑伞上升', icon: 'rise', enabled: movable },
+        { id: 'flight-down', label: '撑伞下降', icon: 'fall', enabled: movable }] : []),
+    ],
+    activities: (config.activities?.items ?? []).map(({ id, label }) => ({ id: `ambient:${id}`, label, enabled: !paused })),
+    toggles: [
+      { id: 'pause', label: '暂停动画', icon: 'pause', checked: gate.userPaused },
+      { id: 'hide', label: '隐藏桌宠', icon: 'eye', checked: gate.userHidden },
+    ],
+    commands: [
+      { id: 'settings', label: '桌宠设置…', icon: 'sliders' },
+      { id: 'reset-position', label: '放回屏幕右下角', icon: 'corner' },
+      { id: 'quit', label: '退出', icon: 'power', quiet: true },
+    ],
+  };
+}
+function chooseMenuItem(id) {
+  const model = menuModel();
+  const item = [...model.quick, ...model.activities, ...model.toggles, ...model.commands].find(entry => entry.id === id);
+  closeMenu();
+  if (!item || item.enabled === false) return;
+  if (id === 'head-touch') send('pet:head-touch');
+  else if (id === 'body-touch') send('pet:body-touch');
+  else if (id === 'run') send('pet:manual-run');
+  else if (id === 'flight-up' || id === 'flight-down') send('pet:manual-flight', { direction: id.slice(7) });
+  else if (id.startsWith('ambient:')) send('pet:ambient', { id: id.slice(8) });
+  else if (id === 'pause') setPaused(!playbackGate.snapshot().userPaused);
+  else if (id === 'hide') toggleVisible();
+  else if (id === 'settings') openSettings().catch(error => log(`Settings failed: ${error.message}`));
+  else if (id === 'reset-position') resetPosition();
+  else if (id === 'quit') app.quit();
 }
 function beginMenu() {
   if (menuOpen) return;
@@ -311,15 +328,45 @@ function endMenu() {
   setIgnored(!hovered);
   send('pet:input-blocked', false);
 }
-function buildPetMenu() {
-  const menu = Menu.buildFromTemplate(template());
-  menu.on('menu-will-show', beginMenu);
-  menu.on('menu-will-close', endMenu);
-  return menu;
+// The menu is its own transparent window: the page renders and measures the
+// card, then the window is placed beside the cursor, flipping at screen edges.
+async function popup(point = screen.getCursorScreenPoint()) {
+  if (!menuWin || menuWin.isDestroyed() || shuttingDown) return;
+  beginMenu();
+  const token = ++menuToken; menuPoint = point;
+  await menuReady;
+  if (token !== menuToken || !menuOpen || menuWin.isDestroyed()) return;
+  menuWin.webContents.send('pet-menu:open', { token, model: menuModel() });
 }
-function rebuildTray() {
+function placeMenu(token, width, height) {
+  if (token !== menuToken || !menuOpen || !menuWin || menuWin.isDestroyed()) return;
+  const area = screen.getDisplayNearestPoint(menuPoint).workArea;
+  width = Math.min(Math.ceil(width), area.width + MENU_MARGIN * 2);
+  height = Math.min(Math.ceil(height), area.height + MENU_MARGIN * 2);
+  const left = menuPoint.x + width - MENU_MARGIN > area.x + area.width;
+  const up = menuPoint.y + height - MENU_MARGIN > area.y + area.height;
+  const x = left ? menuPoint.x - width + MENU_MARGIN : menuPoint.x - MENU_MARGIN;
+  const y = up ? menuPoint.y - height + MENU_MARGIN : menuPoint.y - MENU_MARGIN;
+  menuWin.setBounds({ width, height,
+    x: Math.round(Math.max(area.x - MENU_MARGIN, Math.min(x, area.x + area.width - width + MENU_MARGIN))),
+    y: Math.round(Math.max(area.y - MENU_MARGIN, Math.min(y, area.y + area.height - height + MENU_MARGIN))) }, false);
+  menuWin.show(); menuWin.moveTop(); menuWin.focus();
+  menuWin.webContents.send('pet-menu:show', { token, origin: `${left ? 'right' : 'left'} ${up ? 'bottom' : 'top'}` });
+  // Windows can refuse focus right after a tray click; ask once more.
+  clearTimeout(menuFocusTimer);
+  menuFocusTimer = setTimeout(() => { if (menuOpen && menuWin && !menuWin.isDestroyed() && !menuWin.isFocused()) menuWin.focus(); }, 120);
+}
+function closeMenu() {
+  if (!menuOpen) return;
+  ++menuToken; clearTimeout(menuFocusTimer);
+  if (menuWin && !menuWin.isDestroyed()) {
+    if (menuWin.isVisible()) menuWin.hide();
+    menuWin.webContents.send('pet-menu:hide');
+  }
+  endMenu();
+}
+function updateTray() {
   if (!tray) return;
-  trayMenu = buildPetMenu(); tray.setContextMenu(trayMenu);
   const state = playbackGate.snapshot();
   tray.setToolTip(config.title + (state.userHidden ? '（已隐藏，单击显示）' : state.userPaused ? '（已暂停）' : ''));
 }
@@ -328,14 +375,12 @@ function trayClicked() {
   clearTimeout(trayClickTimer);
   trayClickTimer = setTimeout(() => {
     if (!tray) return;
-    if (playbackGate.snapshot().userHidden) toggleVisible(); else tray.popUpContextMenu(trayMenu);
+    if (playbackGate.snapshot().userHidden) toggleVisible(); else popup();
   }, 260);
 }
 function trayDoubleClicked() { clearTimeout(trayClickTimer); toggleVisible(); }
-function popup() {
-  beginMenu(); buildPetMenu().popup({ window: win, callback: endMenu });
-}
 function trusted(event) { return win && event.sender === win.webContents && event.senderFrame === win.webContents.mainFrame; }
+function trustedMenu(event) { return menuWin && !menuWin.isDestroyed() && event.sender === menuWin.webContents && event.senderFrame === menuWin.webContents.mainFrame; }
 
 function settingsModel() {
   return { settings: { ...settings, launchAtLogin: launchAtLogin() }, activityIdleChoices, minHeight: config.minHeight, maxHeight: config.maxHeight, defaultHeight: config.defaultHeight,
@@ -355,7 +400,7 @@ async function openSettings() {
   const area = screen.getDisplayNearestPoint(screen.getCursorScreenPoint()).workArea;
   settingsWin = new BrowserWindow({ title: '桌宠设置', width: Math.min(440, area.width), height: Math.min(700, area.height - 24),
     minWidth: Math.min(390, area.width), minHeight: Math.min(480, area.height - 24),
-    show: false, backgroundColor: nativeTheme.shouldUseDarkColors ? '#211d1b' : '#faf8f6', alwaysOnTop: settings.alwaysOnTop, autoHideMenuBar: true,
+    show: false, backgroundColor: nativeTheme.shouldUseDarkColors ? '#1c1a21' : '#f2f1f5', alwaysOnTop: settings.alwaysOnTop, autoHideMenuBar: true,
     icon: path.join(root, 'assets/icons/app.png'),
     webPreferences: { preload: path.join(__dirname, 'settings-preload.cjs'),
       contextIsolation: true, nodeIntegration: false, sandbox: true } });
@@ -435,6 +480,16 @@ else {
     speechWin.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
     speechWin.webContents.on('will-navigate', event => event.preventDefault());
     speechReady = speechWin.loadFile(path.join(__dirname, 'speech.html'));
+    menuWin = new BrowserWindow({ width: 308, height: 480, frame: false, transparent: true,
+      backgroundColor: '#00000000', show: false, hasShadow: false, resizable: false, maximizable: false,
+      minimizable: false, fullscreenable: false, skipTaskbar: true, alwaysOnTop: true,
+      webPreferences: { preload: path.join(__dirname, 'menu-preload.cjs'), contextIsolation: true,
+        nodeIntegration: false, sandbox: true } });
+    menuWin.setMenu(null); menuWin.setAlwaysOnTop(true, 'screen-saver');
+    menuWin.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+    menuWin.webContents.on('will-navigate', event => event.preventDefault());
+    menuWin.on('blur', closeMenu);
+    menuReady = menuWin.loadFile(path.join(__dirname, 'menu.html'));
     startupPresentation = new StartupPresentation({ window: win,
       allowed: () => rendererReady && playbackGate.snapshot().visible && !shuttingDown,
       painted: () => firstPagePainted });
@@ -517,6 +572,13 @@ else {
     });
     ipcMain.on('pet:drag-end', (event, point) => { if (trusted(event)) endDrag(point); });
     ipcMain.on('pet:menu', event => { if (trusted(event)) popup(); });
+    ipcMain.on('pet-menu:measured', (event, token, width, height) => {
+      if (trustedMenu(event) && Number.isInteger(token) && Number.isFinite(width) && Number.isFinite(height)) placeMenu(token, width, height);
+    });
+    ipcMain.on('pet-menu:choose', (event, token, id) => {
+      if (trustedMenu(event) && token === menuToken && typeof id === 'string') chooseMenuItem(id);
+    });
+    ipcMain.on('pet-menu:close', (event, token) => { if (trustedMenu(event) && token === menuToken) closeMenu(); });
     ipcMain.on('pet:ready', event => {
       if (!trusted(event) || rendererReady) return;
       rendererReady = true; applyPlaybackGate(); lastCursor = null;
@@ -529,7 +591,8 @@ else {
     tray.setToolTip(config.title);
     tray.on('click', trayClicked);
     tray.on('double-click', trayDoubleClicked);
-    rebuildTray();
+    tray.on('right-click', () => { clearTimeout(trayClickTimer); popup(); });
+    updateTray();
     pointerTimer = setInterval(() => {
       if (!win || win.isDestroyed() || !rendererReady || !win.isVisible() || dragMotion.active) return;
       const cursor = screen.getCursorScreenPoint();
@@ -591,6 +654,7 @@ app.on('before-quit', () => {
   shuttingDown = true;
   settingsWin?.destroy(); settingsWin = null;
   hideSpeech(); speechWin?.destroy(); speechWin = null;
+  closeMenu(); menuWin?.destroy(); menuWin = null;
   startupPresentation?.cancel();
   fullscreenMonitor.stop();
   displayMonitor.stop();
