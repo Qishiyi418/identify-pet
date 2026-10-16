@@ -13,6 +13,8 @@ logs/
 !.env.example
 
 # Temporary files and editor metadata
+__pycache__/
+*.pyc
 .cache/
 .npm-cache/
 coverage/

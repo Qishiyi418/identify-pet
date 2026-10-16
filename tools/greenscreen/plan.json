@@ -1,0 +1,18 @@
+{
+  "_comment": "How unify.py fits each group. Clips not listed (new single activities) use ramp. Modes: ramp = first and last idle-pose frames each matched, linear in between; group = start/loop/end share corrections so loops stay seamless; first/last = one fit on that idle-pose frame; colour = pose-independent colour classes over the clip; colour-last = colour classes for the special pose, ramping to the idle-pose fit in the last segment.",
+  "groups": [
+    { "group": "idle", "segments": ["idle"], "mode": "ramp" },
+    { "group": "bodyTouch", "segments": ["bodyTouch"], "mode": "ramp" },
+    { "group": "headTouch", "segments": ["headTouch"], "mode": "colour", "excludeColour": ["skin"], "note": "the petting hand is skin coloured" },
+    { "group": "run", "segments": ["run"], "mode": "colour" },
+    { "group": "flight", "segments": ["flight"], "mode": "colour", "excludeColour": ["red", "white"], "note": "the umbrella is red and white" },
+    { "group": "high-knees", "segments": ["high-knees.start", "high-knees.loop", "high-knees.end"], "mode": "group" },
+    { "group": "sleepy", "segments": ["sleepy.start", "sleepy.loop", "sleepy.end"], "mode": "group" },
+    { "group": "candy", "segments": ["candy.start", "candy.loop", "candy.end"], "mode": "group" },
+    { "group": "homework", "segments": ["homework.start", "homework.loop", "homework.end"], "mode": "group" },
+    { "group": "gaming", "segments": ["gaming"], "mode": "first", "excludeParts": ["pompom_red", "pompom_white"], "note": "holds a console instead of pom-poms" },
+    { "group": "drag", "segments": ["drag.hold", "drag.release"], "mode": "colour-last" },
+    { "group": "hover.greet", "segments": ["hover.greet"], "mode": "colour-last" },
+    { "group": "hover.fall", "segments": ["hover.fall"], "mode": "colour" }
+  ]
+}

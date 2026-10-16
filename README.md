@@ -56,6 +56,7 @@ config/runtime.json  动作、交互、随机规则和播放参数
 config/movement.json 移动边界参数
 src/                 Electron 主进程、人物与设置界面、原生观察器
 scripts/launch.cjs   启动器
+tools/greenscreen/   绿幕抠像、颜色统一与核对工具（Python）
 licenses/            组件许可
 package.json
 package-lock.json
@@ -64,7 +65,7 @@ package-lock.json
 
 修改素材时同步更新 `config/runtime.json` 中的视频、首帧、时长与尺寸；人物轮廓变化后还需要更新 `config/movement.json`。
 
-所有动画的发色、服装和肤色已统一校正到角色首帧参考图：首尾帧按部位（头发、帽子、上衣、彩球、短裤、皮肤、眼睛、蝴蝶结）对齐参考色，中间逐帧平滑过渡；同一组动作的起始、循环、收尾共用校正，循环与衔接不跳色。新增素材应先按同一标准核对后再加入。
+所有动画的发色、服装和肤色已统一校正到角色首帧参考图：首尾帧按部位（头发、帽子、上衣、彩球、短裤、皮肤、眼睛、蝴蝶结）对齐参考色，中间逐帧平滑过渡；同一组动作的起始、循环、收尾共用校正，循环与衔接不跳色。参考图与工具位于 `tools/greenscreen/`，新增素材按其中说明抠像、校色并核对后再加入。
 
 ## 设置与日志
 
