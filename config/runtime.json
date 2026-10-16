@@ -607,6 +607,44 @@
             "fixedTransformPerClip": true
           }
         }
+      },
+      {
+        "id": "look-around",
+        "label": "左右张望",
+        "type": "single",
+        "segment": {
+          "file": "assets/animations/daily-idle-match-v001/look-around-v001-m01.webm",
+          "poster": "assets/posters/daily-idle-match-v001/look-around-v001-m01.png",
+          "materialId": "look-around-v001-m01",
+          "sha256": "c3ec34a2c5e68a550226ff386d76b536d1bd96d71f1675e3a3f5e829a45959d1",
+          "width": 640,
+          "height": 360,
+          "fps": 24,
+          "frames": 145,
+          "durationSec": 6.041666666666667,
+          "mirrorAllowed": false,
+          "visibleHeight": 260,
+          "foot": [
+            320,
+            321
+          ],
+          "viewport": {
+            "x": 168,
+            "y": 32,
+            "width": 396,
+            "height": 300
+          },
+          "colorVariant": "daily-idle-match-v001",
+          "colorProfile": "look-around",
+          "normalization": {
+            "standingHeight": 252,
+            "footAnchor": [
+              320,
+              321
+            ],
+            "fixedTransformPerClip": true
+          }
+        }
       }
     ]
   },
@@ -866,6 +904,12 @@
         "weight": 2,
         "timeProfile": "dayPreferred",
         "cooldownMs": 600000
+      },
+      "look-around": {
+        "enabled": true,
+        "weight": 4,
+        "timeProfile": "any",
+        "cooldownMs": 180000
       },
       "run": {
         "enabled": true,
