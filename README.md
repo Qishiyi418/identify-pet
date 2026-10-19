@@ -80,7 +80,8 @@ test/                素材、打包配置与设置逻辑的检查（npm test）
 packaging/           安装程序图标与卸载脚本
 .github/workflows/   自动检查与 Windows 安装包构建
 tools/greenscreen/   绿幕抠像、颜色统一与核对工具（Python）
-licenses/            组件许可
+licenses/            第三方组件许可
+LICENSE              代码许可（MIT）；素材许可见 assets/LICENSE
 package.json
 package-lock.json
 启动拉拉队员桌宠.vbs
@@ -98,6 +99,9 @@ package-lock.json
 
 Windows 原生观察器首次运行时会编译到用户数据目录，使用系统自带的 .NET Framework C# 编译器；编译不可用时，对应观察功能降级并写入运行日志。
 
-## 组件许可
+## 许可证
 
-`src/video-canvas.js` 的组件许可见 [licenses/video-canvas-MIT.txt](licenses/video-canvas-MIT.txt)。
+- **代码**采用 [MIT 许可证](LICENSE)：可以自由使用、修改和再发布，包括商业用途，但须保留版权和许可声明。
+- **角色素材**采用 [CC BY-NC 4.0](assets/LICENSE)，范围包括 `assets/` 下的全部文件、`packaging/icon.ico` 和 `tools/greenscreen/reference/` 下的图片。可以在非商业用途下分享和改编，但须署名、附上许可协议链接，并说明是否作了修改；不得用于商业用途。署名示例：“拉拉队员桌宠”角色素材 © 2026 Qishiyi418，CC BY-NC 4.0。
+- 角色形象和动画由 AI 生成，并经过抠像、对齐和校色处理。
+- `src/video-canvas.js` 中第三方组件的许可见 [licenses/video-canvas-MIT.txt](licenses/video-canvas-MIT.txt)。安装包另附 Electron 和 Chromium 的许可文件（安装目录下的 `LICENSE.electron.txt` 和 `LICENSES.chromium.html`）。
