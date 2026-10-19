@@ -2,3 +2,4 @@
 *.png binary
 *.webm binary
 *.vbs text eol=crlf working-tree-encoding=UTF-16LE-BOM
+*.ico binary

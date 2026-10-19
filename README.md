@@ -13,6 +13,26 @@ npm start
 
 首次安装需要联网下载依赖。之后也可以双击根目录的 `启动拉拉队员桌宠.vbs`。运行 `npm start -- --settings` 会同时打开设置。
 
+`npm test` 会检查配置里的每段素材是否存在、是否与记录的 sha256 一致，以及打包配置和设置处理逻辑。
+
+## 打包安装程序
+
+在 Windows 上运行：
+
+```powershell
+npm ci
+npm run dist
+```
+
+生成 `dist\cheerleader-desktop-pet-<版本>-setup.exe`。安装程序装到当前用户目录，不需要管理员权限，可以修改安装位置，并创建桌面和开始菜单快捷方式。`npm run pack` 只生成免安装目录 `dist\win-unpacked`，方便快速试用。
+
+也可以不在本机打包：在 GitHub 仓库的 Actions → Build → Run workflow 手动构建，或推送 `v0.1.0` 这样的版本标签。构建完成后，在该次运行页面的 Artifacts 下载 `installer`。
+
+- 安装版与从项目目录运行的版本共用设置和日志（见下文），同一时间只会运行一个桌宠。
+- 卸载时保留设置，但会删除“开机自动启动”登录项；升级安装不受影响。
+- 安装程序没有代码签名，首次运行时 Windows SmartScreen 可能提示“未知发布者”，点击“更多信息 → 仍要运行”即可。公开分发前建议购买代码签名证书，并在 electron-builder 中配置签名。
+- 视频、首帧图和原生观察器源码在安装版中放在 `resources\app.asar.unpacked`，其余文件打包进 `app.asar`。新增素材请放在 `assets/animations/` 和 `assets/posters/` 下，`npm test` 会检查是否遗漏。
+
 ## 互动与菜单
 
 - 鼠标移到人物上时显示小猫爪指针，透明区域保留鼠标穿透。
@@ -29,7 +49,7 @@ npm start
 
 日常行为可分别设置随机播放、动作频率（活泼 15 秒 / 适中 1 分钟 / 安静 3 分钟）、条件选择、随机移动、只在原位附近活动、悬停打招呼、保持置顶、全屏避让和开机自动启动。
 
-“只在原位附近活动”默认开启：自动走动和撑伞只在你最后一次拖放、恢复位置或调整大小时的位置附近进行，不会慢慢漂到屏幕中间。开机自动启动写入当前用户的 Windows 登录项，关闭开关即删除。
+“只在原位附近活动”默认开启：自动走动和撑伞只在你最后一次拖放、恢复位置或调整大小时的位置附近进行，不会慢慢漂到屏幕中间。开机自动启动写入当前用户的 Windows 登录项，关闭开关即删除。安装版的登录项指向安装目录；从项目目录运行时指向项目文件夹，移动文件夹后需要重新打开这个开关。
 
 关闭设置窗口（也可按 Esc）不会退出桌宠，修改会自动保存。
 
@@ -56,6 +76,9 @@ config/runtime.json  动作、交互、随机规则和播放参数
 config/movement.json 移动边界参数
 src/                 Electron 主进程、人物与设置界面、原生观察器
 scripts/launch.cjs   启动器
+test/                素材、打包配置与设置逻辑的检查（npm test）
+packaging/           安装程序图标与卸载脚本
+.github/workflows/   自动检查与 Windows 安装包构建
 tools/greenscreen/   绿幕抠像、颜色统一与核对工具（Python）
 licenses/            组件许可
 package.json

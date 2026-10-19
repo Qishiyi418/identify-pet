@@ -14,6 +14,10 @@ const { FullscreenMonitor } = require('./fullscreen-monitor.cjs');
 const { DisplayMonitor } = require('./display-monitor.cjs');
 const { StartupPresentation } = require('./startup-presentation.cjs');
 const root = path.resolve(__dirname, '..');
+// Installed builds keep videos, posters and the native observer sources outside
+// app.asar (asarUnpack in package.json), so the player and csc.exe read plain files.
+const unpackedRoot = app.isPackaged ? root.replace(/\.asar$/, '.asar.unpacked') : root;
+const nativeSource = name => path.join(unpackedRoot, 'src', 'native', name);
 const diagnostics = process.argv.includes('--diagnostics');
 
 app.setName(config.title);
@@ -39,10 +43,11 @@ let startupPresentation, firstPagePainted = false;
 const playbackGate = new PlaybackGate();
 const systemListeners = [];
 const fullscreenMonitor = new FullscreenMonitor({
-  directory: path.join(app.getPath('userData'), 'native-tools'), log,
+  directory: path.join(app.getPath('userData'), 'native-tools'), source: nativeSource('fullscreen-monitor.cs'), log,
   onChange: value => setReason('fullscreen', value),
 });
-const displayMonitor = new DisplayMonitor({ directory: path.join(app.getPath('userData'), 'native-tools'), log,
+const displayMonitor = new DisplayMonitor({ directory: path.join(app.getPath('userData'), 'native-tools'),
+  source: nativeSource('display-monitor.cs'), log,
   onChange: value => setReason('display-off', value) });
 const dragMotion = new DragMotion({
   readCursor: () => screen.getCursorScreenPoint(), readBounds: () => win.getBounds(),
@@ -119,8 +124,8 @@ function setLaunchAtLogin(value) {
 
 function model() {
   const clip = value => ({ ...value,
-    file: pathToFileURL(path.join(root, value.file)).href,
-    poster: pathToFileURL(path.join(root, value.poster)).href });
+    file: pathToFileURL(path.join(unpackedRoot, value.file)).href,
+    poster: pathToFileURL(path.join(unpackedRoot, value.poster)).href });
   return { title: config.title, height: settings.height, size,
     ...playbackGate.snapshot(), actionPolicy: config.actionPolicy, alwaysOnTop: settings.alwaysOnTop,
     wanderEnabled: settings.wanderEnabled,
@@ -135,16 +140,16 @@ function model() {
         : { ...item, segment: clip(item.segment) }) } : null,
     dragFeedback: config.dragFeedback ? { hold: clip(config.dragFeedback.hold), release: clip(config.dragFeedback.release) } : null,
     idle: { ...config.idle,
-      file: pathToFileURL(path.join(root, config.idle.file)).href,
-      poster: pathToFileURL(path.join(root, config.idle.poster)).href },
+      file: pathToFileURL(path.join(unpackedRoot, config.idle.file)).href,
+      poster: pathToFileURL(path.join(unpackedRoot, config.idle.poster)).href },
     headTouch: { ...config.headTouch,
-      file: pathToFileURL(path.join(root, config.headTouch.file)).href,
-      poster: pathToFileURL(path.join(root, config.headTouch.poster)).href },
-    run: { ...config.run, file: pathToFileURL(path.join(root, config.run.file)).href,
-      poster: pathToFileURL(path.join(root, config.run.poster)).href },
+      file: pathToFileURL(path.join(unpackedRoot, config.headTouch.file)).href,
+      poster: pathToFileURL(path.join(unpackedRoot, config.headTouch.poster)).href },
+    run: { ...config.run, file: pathToFileURL(path.join(unpackedRoot, config.run.file)).href,
+      poster: pathToFileURL(path.join(unpackedRoot, config.run.poster)).href },
     bodyTouch: { ...config.bodyTouch,
-      file: pathToFileURL(path.join(root, config.bodyTouch.file)).href,
-      poster: pathToFileURL(path.join(root, config.bodyTouch.poster)).href } };
+      file: pathToFileURL(path.join(unpackedRoot, config.bodyTouch.file)).href,
+      poster: pathToFileURL(path.join(unpackedRoot, config.bodyTouch.poster)).href } };
 }
 function send(channel, value) {
   if (win && !win.isDestroyed() && !win.webContents.isDestroyed()) win.webContents.send(channel, value);
