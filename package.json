@@ -5,7 +5,7 @@
   "private": true,
   "description": "Windows 拉拉队员桌宠，支持透明动画、鼠标互动、随机动作与桌面移动。",
   "author": "Qishiyi418",
-  "license": "UNLICENSED",
+  "license": "MIT AND CC-BY-NC-4.0",
   "main": "src/main.cjs",
   "scripts": {
     "start": "node scripts/launch.cjs",
@@ -30,6 +30,7 @@
     },
     "files": [
       "package.json",
+      "LICENSE",
       "src/**/*",
       "config/**/*",
       "assets/**/*",
