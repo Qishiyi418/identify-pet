@@ -4,14 +4,68 @@
   "version": "0.1.0",
   "private": true,
   "description": "Windows 拉拉队员桌宠，支持透明动画、鼠标互动、随机动作与桌面移动。",
+  "author": "Qishiyi418",
+  "license": "UNLICENSED",
   "main": "src/main.cjs",
   "scripts": {
-    "start": "node scripts/launch.cjs"
+    "start": "node scripts/launch.cjs",
+    "test": "node --test \"test/*.test.cjs\"",
+    "pack": "electron-builder --win --dir --publish never",
+    "dist": "electron-builder --win nsis --publish never"
   },
   "devDependencies": {
-    "electron": "43.3.0"
+    "electron": "43.7.7",
+    "electron-builder": "26.17.0"
   },
   "engines": {
     "node": ">=22.12.0"
+  },
+  "build": {
+    "appId": "local.cheerleader.desktop-pet",
+    "executableName": "CheerleaderDesktopPet",
+    "copyright": "Copyright © 2026 Qishiyi418",
+    "directories": {
+      "buildResources": "packaging",
+      "output": "dist"
+    },
+    "files": [
+      "package.json",
+      "src/**/*",
+      "config/**/*",
+      "assets/**/*",
+      "licenses/**/*"
+    ],
+    "asarUnpack": [
+      "assets/animations/**",
+      "assets/posters/**",
+      "src/native/**"
+    ],
+    "electronLanguages": [
+      "zh-CN",
+      "en-US"
+    ],
+    "npmRebuild": false,
+    "publish": null,
+    "electronFuses": {
+      "runAsNode": false,
+      "enableNodeOptionsEnvironmentVariable": false,
+      "enableNodeCliInspectArguments": false,
+      "onlyLoadAppFromAsar": true
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "packaging/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerLanguages": [
+        "zh_CN"
+      ],
+      "language": "2052",
+      "include": "packaging/installer.nsh",
+      "artifactName": "${name}-${version}-setup.${ext}"
+    }
   }
 }
