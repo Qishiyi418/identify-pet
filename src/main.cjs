@@ -39,7 +39,7 @@ let settings, size, paused = false, ignored = false, menuOpen = false;
 let displayAreas = [], displayBounds = [];
 let shuttingDown = false, rendererReady = false, lastCursor = null, interactionBusy = false, hovered = false;
 let wanderMotion, flightMotion, savedTopPadding = config.idle.topPadding ?? 0;
-let startupPresentation, firstPagePainted = false;
+let startupPresentation, firstPagePainted = false, fallbackReady = false, fallbackTimer;
 const playbackGate = new PlaybackGate();
 const systemListeners = [];
 const fullscreenMonitor = new FullscreenMonitor({
@@ -127,6 +127,7 @@ function model() {
     file: pathToFileURL(path.join(unpackedRoot, value.file)).href,
     poster: pathToFileURL(path.join(unpackedRoot, value.poster)).href });
   return { title: config.title, height: settings.height, size,
+    startupFallback: startupPresentation?.phase === 'fallback' && !rendererReady,
     ...playbackGate.snapshot(), actionPolicy: config.actionPolicy, alwaysOnTop: settings.alwaysOnTop,
     wanderEnabled: settings.wanderEnabled,
     conditionalRandomEnabled: settings.conditionalRandomEnabled,
@@ -188,6 +189,24 @@ function sync() {
   send('pet:state', model()); updateTray();
   if (settingsWin && !settingsWin.isDestroyed()) settingsWin.webContents.send('pet:settings-state', settingsModel());
 }
+function handleStartupFallback(reason) {
+  if (!win || win.isDestroyed() || shuttingDown) return;
+  log(`${reason}; restoring opacity, rendererReady=${rendererReady}`);
+  win.setOpacity(1);
+  applyPlaybackGate();
+  // The fallback image is independent of the animation renderer. If even that
+  // page cannot respond (for example a broken preload), explain the failure.
+  if (!rendererReady && !fallbackReady) fallbackTimer = setTimeout(() => {
+    if (shuttingDown || rendererReady || fallbackReady || !win || win.isDestroyed()) return;
+    log('Startup fallback page did not respond');
+    dialog.showMessageBox({ type: 'error', title: config.title,
+      message: '桌宠画面未能加载，请重新启动桌宠。',
+      detail: `如果重启后仍无法显示，请重新安装完整安装包。运行日志：\n${logFile}`,
+      buttons: ['重新启动', '退出'], defaultId: 0, cancelId: 1,
+    }).then(({ response }) => { if (!shuttingDown) { if (response === 0) app.relaunch(); app.quit(); } })
+      .catch(error => log(`Startup error dialog failed: ${error.message}`));
+  }, 5000);
+}
 function applyPlaybackGate() {
   const state = playbackGate.snapshot(); paused = state.paused;
   if (!win || win.isDestroyed() || shuttingDown) return;
@@ -195,15 +214,17 @@ function applyPlaybackGate() {
   if (paused) flightMotion?.interrupt('paused');
   if (paused || !state.visible) hideSpeech();
   if (!state.visible) { endDrag(); win.hide(); }
-  else if (rendererReady) {
+  else if (rendererReady || fallbackReady) {
     if (startupPresentation?.finished) {
-      if (!win.isVisible()) { win.showInactive(); lastCursor = null; }
+      win.setOpacity(1);
+      if (!win.isVisible()) { win.showInactive(); if (!win.isVisible()) win.showInactive(); lastCursor = null; }
     } else if (startupPresentation && !startupPresentation.pending) {
-      startupPresentation.present().then(shown => { if (shown) applyPlaybackGate(); }).catch(error => {
+      startupPresentation.present().then(shown => {
+        if (shown || (!startupPresentation.finished && playbackGate.snapshot().visible && !shuttingDown)) applyPlaybackGate();
+      }).catch(error => {
         // Showing without the transparency warmup risks a brief dark frame, but
         // is better than a pet which never appears and leaves only a tray icon.
-        log(`Startup presentation failed: ${error.message}; showing without warmup`);
-        if (startupPresentation.fallback()) { win.setOpacity(1); applyPlaybackGate(); }
+        startupPresentation.fallback(`Startup presentation failed: ${error.message}`);
       });
     }
   }
@@ -281,16 +302,17 @@ function toggleVisible() {
 }
 function menuModel() {
   const gate = playbackGate.snapshot();
+  const playable = !paused && rendererReady;
   const movable = !paused && rendererReady && Boolean(win?.isVisible());
   return {
     quick: [
-      { id: 'head-touch', label: '摸摸头', icon: 'cap', enabled: !paused },
-      { id: 'body-touch', label: '互动回应', icon: 'heart', enabled: !paused },
+      { id: 'head-touch', label: '摸摸头', icon: 'cap', enabled: playable },
+      { id: 'body-touch', label: '互动回应', icon: 'heart', enabled: playable },
       { id: 'run', label: '走两步', icon: 'shoe', enabled: movable },
       ...(config.flight ? [{ id: 'flight-up', label: '撑伞上升', icon: 'rise', enabled: movable },
         { id: 'flight-down', label: '撑伞下降', icon: 'fall', enabled: movable }] : []),
     ],
-    activities: (config.activities?.items ?? []).map(({ id, label }) => ({ id: `ambient:${id}`, label, enabled: !paused })),
+    activities: (config.activities?.items ?? []).map(({ id, label }) => ({ id: `ambient:${id}`, label, enabled: playable })),
     toggles: [
       { id: 'pause', label: '暂停动画', icon: 'pause', checked: gate.userPaused },
       { id: 'hide', label: '隐藏桌宠', icon: 'eye', checked: gate.userHidden },
@@ -298,6 +320,7 @@ function menuModel() {
     commands: [
       { id: 'settings', label: '桌宠设置…', icon: 'sliders' },
       { id: 'reset-position', label: '放回屏幕右下角', icon: 'corner' },
+      { id: 'restart', label: '重新启动桌宠', icon: 'power' },
       { id: 'quit', label: '退出', icon: 'power', quiet: true },
     ],
   };
@@ -315,7 +338,12 @@ function chooseMenuItem(id) {
   else if (id === 'pause') setPaused(!playbackGate.snapshot().userPaused);
   else if (id === 'hide') toggleVisible();
   else if (id === 'settings') openSettings().catch(error => log(`Settings failed: ${error.message}`));
-  else if (id === 'reset-position') resetPosition();
+  else if (id === 'reset-position') {
+    setReason('hidden', false);
+    startupPresentation?.fallback('Manual position recovery during startup');
+    resetPosition();
+  }
+  else if (id === 'restart') { app.relaunch(); app.quit(); }
   else if (id === 'quit') app.quit();
 }
 function beginMenu() {
@@ -497,7 +525,7 @@ else {
     menuReady = menuWin.loadFile(path.join(__dirname, 'menu.html'));
     startupPresentation = new StartupPresentation({ window: win,
       allowed: () => rendererReady && playbackGate.snapshot().visible && !shuttingDown,
-      painted: () => firstPagePainted });
+      painted: () => firstPagePainted, onFallback: handleStartupFallback });
     win.once('ready-to-show', () => { firstPagePainted = true; applyPlaybackGate(); });
     const available = () => Boolean(win && !win.isDestroyed() && rendererReady && win.isVisible() &&
       !paused && !menuOpen && !dragMotion.active && !interactionBusy && !shuttingDown);
@@ -586,8 +614,14 @@ else {
     ipcMain.on('pet-menu:close', (event, token) => { if (trustedMenu(event) && token === menuToken) closeMenu(); });
     ipcMain.on('pet:ready', event => {
       if (!trusted(event) || rendererReady) return;
+      clearTimeout(fallbackTimer);
       rendererReady = true; applyPlaybackGate(); lastCursor = null;
       wanderMotion.setEnabled(settings.wanderEnabled);
+    });
+    ipcMain.on('pet:fallback-ready', event => {
+      if (!trusted(event) || rendererReady || startupPresentation?.phase !== 'fallback') return;
+      clearTimeout(fallbackTimer); fallbackReady = true;
+      setIgnored(false); applyPlaybackGate();
     });
     ipcMain.on('pet:error', (event, message) => {
       if (trusted(event) && typeof message === 'string') log(message.slice(0, 1000));
@@ -626,20 +660,21 @@ else {
     if (powerMonitor.getSystemIdleState(1) === 'locked') setReason('lock', true);
     displayMonitor.start();
     if (settings.avoidFullscreen) fullscreenMonitor.start(win.getNativeWindowHandle());
+    startupPresentation.start();
     await win.loadFile(path.join(__dirname, 'index.html'));
     if (process.argv.includes('--settings')) openSettings().catch(error => log(`Settings failed: ${error.message}`));
     log(`Started Electron ${process.versions.electron}; material ${config.idle.materialId}`);
     if (diagnostics) {
       diagnosticsTimer = setInterval(async () => {
         try {
-          const renderer = await win.webContents.executeJavaScript('window.petDiagnostics()');
+          const renderer = await win.webContents.executeJavaScript('window.petDiagnostics?.() ?? null');
           fs.writeFileSync(path.join(app.getPath('userData'), 'diagnostics.json'), JSON.stringify({
             pid: process.pid, bounds: win.getBounds(), ignored, dragging: dragMotion.active,
             dragMotion: dragMotion.diagnostics(),
             wanderMotion: wanderMotion.diagnostics(),
             flightMotion: flightMotion.diagnostics(),
             movement: { drag: 'free', automatic: 'visible-character', body: body() },
-            startup: startupPresentation.snapshot(), opacity: win.getOpacity(),
+            startup: startupPresentation.snapshot(), opacity: win.getOpacity(), rendererReady, fallbackReady,
             paused, visible: win.isVisible(), lifecycle: playbackGate.snapshot(),
             speech: { visible: speechWin?.isVisible() ?? false, text: speechText, below: speechBelow },
             fullscreenMonitor: fullscreenMonitor.snapshot(), settings, renderer,
@@ -661,6 +696,7 @@ app.on('before-quit', () => {
   hideSpeech(); speechWin?.destroy(); speechWin = null;
   closeMenu(); menuWin?.destroy(); menuWin = null;
   startupPresentation?.cancel();
+  clearTimeout(fallbackTimer);
   fullscreenMonitor.stop();
   displayMonitor.stop();
   for (const [event, listener] of systemListeners) powerMonitor.removeListener(event, listener);
