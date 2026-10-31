@@ -1,7 +1,7 @@
 {
   "name": "cheerleader-desktop-pet",
   "productName": "拉拉队员桌宠",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Windows 拉拉队员桌宠，支持透明动画、鼠标互动、随机动作与桌面移动。",
   "author": "Qishiyi418",
@@ -10,6 +10,7 @@
   "scripts": {
     "start": "node scripts/launch.cjs",
     "test": "node --test \"test/*.test.cjs\"",
+    "verify:startup": "node scripts/verify-startup.cjs",
     "pack": "electron-builder --win --dir --publish never",
     "dist": "electron-builder --win nsis --publish never"
   },

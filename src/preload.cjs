@@ -14,6 +14,7 @@ contextBridge.exposeInMainWorld('pet', {
   endDrag: point => ipcRenderer.send('pet:drag-end', point),
   menu: () => ipcRenderer.send('pet:menu'),
   ready: () => ipcRenderer.send('pet:ready'),
+  fallbackReady: () => ipcRenderer.send('pet:fallback-ready'),
   error: message => ipcRenderer.send('pet:error', message),
   activity: busy => ipcRenderer.send('pet:activity', busy),
   runStatus: (id, ready, completed = false) => ipcRenderer.send('pet:run-status', id, ready, completed),
