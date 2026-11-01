@@ -8,6 +8,7 @@ const { sanitizeSettings, geometry, resizeAtFeet, constrain, recoverPosition, mo
 const screen = { x: 0, y: 0, width: 1920, height: 1040 };
 
 test('settings fall back to defaults for missing or malformed input', () => {
+  assert.equal(config.defaultHeight, 160);
   for (const input of [null, 'text', { height: 'tall', alwaysOnTop: 1, activityIdleSec: 7, position: { x: 'a' } }]) {
     const settings = sanitizeSettings(input, config);
     assert.equal(settings.height, config.defaultHeight);
@@ -16,6 +17,11 @@ test('settings fall back to defaults for missing or malformed input', () => {
     assert.equal(settings.position, null);
     assert.deepEqual(Object.keys(settings.randomActions).sort(), Object.keys(config.randomPolicy.defaults).sort());
   }
+});
+
+test('saved size remains unchanged after updating the first-run default', () => {
+  assert.equal(sanitizeSettings({ height: 260 }, config).height, 260);
+  assert.equal(sanitizeSettings({ height: 420 }, config).height, 420);
 });
 
 test('settings clamp size and rule values', () => {
