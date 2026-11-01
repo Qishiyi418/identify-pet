@@ -58,7 +58,7 @@ if (!process.versions.electron) {
   entry.paths = Module._nodeModulePaths(path.dirname(filename));
   entry._compile(fs.readFileSync(filename, 'utf8') + `
 global.startupAudit = {
-  read: () => ({ rendererReady, fallbackReady, opacity: win.getOpacity(), visible: win.isVisible(),
+  read: () => ({ rendererReady, fallbackReady, opacity: win.getOpacity(), visible: win.isVisible(), height: settings.height, bounds: win.getBounds(),
     startup: startupPresentation.snapshot(), lifecycle: playbackGate.snapshot() }),
   hide: () => setReason('hidden', true),
   show: () => setReason('hidden', false),
@@ -71,6 +71,8 @@ global.startupAudit = {
       report.dom = await win.webContents.executeJavaScript(`({ fallback: Boolean(document.getElementById('startup-fallback')),
         text: document.getElementById('startup-fallback')?.textContent, renderer: window.petDiagnostics?.() ?? null })`);
       assert.equal(report.opacity, 1);
+      assert.equal(report.height, 160);
+      assert.ok(report.bounds.width > 0 && report.bounds.height > 0);
       assert.equal(report.visible, scenario !== 'hidden-warmup');
       assert.equal(report.startup.phase, scenario === 'normal' ? 'ready' : 'fallback');
       const missingRenderer = ['renderer-missing', 'poster-missing'].includes(scenario);

@@ -3,7 +3,7 @@
   "appId": "local.cheerleader.desktop-pet",
   "dataDirectory": "CheerleaderDesktopPet",
   "title": "拉拉队员桌宠",
-  "defaultHeight": 260,
+  "defaultHeight": 160,
   "minHeight": 160,
   "maxHeight": 420,
   "actionPolicy": {
